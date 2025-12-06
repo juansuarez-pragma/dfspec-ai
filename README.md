@@ -183,15 +183,19 @@ dfspec agents --info=dftest    # Ver detalles de un agente
 
 ## Comandos
 
-DFSpec proporciona **13 comandos slash**:
+DFSpec proporciona **17 comandos slash**:
 
 ### Comandos Core (Flujo Principal)
 
 | Comando | Descripcion | Genera |
 |---------|-------------|--------|
-| `/df-spec <feature>` | Crear especificacion de feature | `specs/feature.spec.md` |
-| `/df-plan <feature>` | Generar plan de implementacion | `specs/feature.plan.md` |
+| `/df-spec <feature>` | Crear especificacion de feature | `specs/NNN-feature/spec.md` |
+| `/df-clarify` | Clarificar requisitos ambiguos | Updates `spec.md` |
+| `/df-plan <feature>` | Generar plan de implementacion | `specs/NNN-feature/plan.md` |
+| `/df-analyze` | Analizar consistencia entre artifacts | Reporte de consistencia |
+| `/df-tasks` | Generar desglose de tareas | `specs/NNN-feature/tasks.md` |
 | `/df-implement <feature>` | Implementar con TDD estricto | `lib/`, `test/` |
+| `/df-checklist` | Generar checklist de calidad | `specs/NNN-feature/checklist.md` |
 | `/df-verify <feature>` | Verificar implementacion vs spec | Reporte de cumplimiento |
 | `/df-status` | Ver estado del proyecto | Dashboard de features |
 
@@ -207,6 +211,24 @@ DFSpec proporciona **13 comandos slash**:
 | `/df-docs` | Generar documentacion | Effective Dart |
 | `/df-deps` | Gestionar dependencias | pub.dev, slopsquatting |
 | `/df-orchestrate` | Orquestar multiples agentes | Pipelines complejos |
+
+### Scripts de Automatizacion
+
+DFSpec incluye scripts bash para automatizacion:
+
+```bash
+# Crear nueva feature con branch y estructura
+./scripts/create-feature.sh "Mi feature"
+
+# Validar estructura de spec
+./scripts/validate-spec.sh
+
+# Ejecutar todos los checks de calidad
+./scripts/run-quality.sh
+
+# Ver prerrequisitos del workflow
+./scripts/check-prerequisites.sh
+```
 
 ## Flujo de Trabajo
 
@@ -284,16 +306,27 @@ DFSpec proporciona **13 comandos slash**:
 
 ## Agentes Especializados
 
-DFSpec incluye **13 agentes** especializados definidos en la carpeta `agents/`:
+DFSpec incluye **17 agentes** especializados definidos en la carpeta `agents/`:
+
+### Agentes Core (Flujo Principal)
 
 | Agente | Comando | Modelo | Rol |
 |--------|---------|--------|-----|
 | **dfspec** | `/df-spec` | opus | Especificador de requisitos |
+| **dfclarifier** | `/df-clarify` | sonnet | Clarificador de ambiguedades |
 | **dfplanner** | `/df-plan` | opus | Arquitecto de soluciones |
+| **dfanalyzer** | `/df-analyze` | opus | Analista de consistencia |
+| **dftasks** | `/df-tasks` | opus | Generador de tareas |
 | **dfimplementer** | `/df-implement` | opus | Desarrollador TDD |
-| **dftest** | `/df-test` | opus | Especialista QA |
+| **dfchecklist** | `/df-checklist` | sonnet | Generador de checklists |
 | **dfverifier** | `/df-verify` | opus | Auditor de completitud |
 | **dfstatus** | `/df-status` | haiku | Dashboard y metricas |
+
+### Agentes de Calidad
+
+| Agente | Comando | Modelo | Rol |
+|--------|---------|--------|-----|
+| **dftest** | `/df-test` | opus | Especialista QA |
 | **dfsolid** | `/df-review` | opus | Guardian SOLID |
 | **dfsecurity** | `/df-security` | opus | Seguridad OWASP |
 | **dfperformance** | `/df-performance` | opus | Auditor 60fps |

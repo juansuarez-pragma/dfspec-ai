@@ -180,7 +180,30 @@ flutter run -d chrome
 
 ## Riesgos
 
-| Riesgo | Mitigacion |
-|--------|------------|
-| {{RISK_1}} | {{MITIGATION_1}} |
-| {{RISK_2}} | {{MITIGATION_2}} |
+| Riesgo | Probabilidad | Impacto | Mitigacion |
+|--------|--------------|---------|------------|
+| {{RISK_1}} | Alta/Media/Baja | Alto/Medio/Bajo | {{MITIGATION_1}} |
+| {{RISK_2}} | | | {{MITIGATION_2}} |
+
+---
+
+## Definition of Done
+
+- [ ] Todos los tests pasan (`dart test`)
+- [ ] Cobertura >= 85%
+- [ ] `dart analyze` sin errores ni warnings
+- [ ] `dart format` aplicado
+- [ ] Criterios de aceptacion verificados
+- [ ] Code review aprobado
+
+---
+
+## Notas de Implementacion
+
+### Consideraciones Tecnicas
+1. {{CONSIDERATION_1}}
+2. {{CONSIDERATION_2}}
+
+### Decisiones de Diseno
+- {{DECISION_1}}: {{REASON_1}}
+- {{DECISION_2}}: {{REASON_2}}
