@@ -3,6 +3,7 @@ library;
 
 export 'agent_config.dart';
 export 'agent_registry.dart';
+export 'ci_config.dart';
 export 'constitutional_gate.dart';
 export 'dfspec_config.dart';
 export 'documentation_spec.dart';

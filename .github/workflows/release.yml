@@ -1,5 +1,6 @@
 name: Release
 
+# CD: Se activa solo con tags de versión
 on:
   push:
     tags:
@@ -8,10 +9,18 @@ on:
 permissions:
   contents: write
 
+env:
+  DART_SDK: stable
+
 jobs:
-  release:
-    name: Create Release
+  # =============================================================================
+  # Etapa 1: Validación Pre-Release
+  # =============================================================================
+  validate:
+    name: Validate Release
     runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.VERSION }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -19,7 +28,21 @@ jobs:
 
       - uses: dart-lang/setup-dart@v1
         with:
-          sdk: stable
+          sdk: ${{ env.DART_SDK }}
+
+      - name: Get version from tag
+        id: version
+        run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
+
+      - name: Verify version matches pubspec
+        run: |
+          PUBSPEC_VERSION=$(grep '^version:' pubspec.yaml | cut -d' ' -f2)
+          TAG_VERSION="${{ steps.version.outputs.VERSION }}"
+          if [ "$PUBSPEC_VERSION" != "$TAG_VERSION" ]; then
+            echo "::error::Version mismatch: pubspec.yaml=$PUBSPEC_VERSION, tag=$TAG_VERSION"
+            exit 1
+          fi
+          echo "Version verified: $TAG_VERSION"
 
       - name: Install dependencies
         run: dart pub get
@@ -27,68 +50,214 @@ jobs:
       - name: Run tests
         run: dart test
 
-      - name: Get version from tag
-        id: get_version
-        run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
+      - name: Run quality gates
+        run: dart analyze --fatal-infos
 
-      - name: Verify version matches pubspec
+  # =============================================================================
+  # Etapa 2: Build Multi-Plataforma
+  # =============================================================================
+  build:
+    name: Build (${{ matrix.os }})
+    needs: validate
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            target: linux
+            artifact: dfspec-linux
+            extension: ''
+          - os: macos-latest
+            target: macos
+            artifact: dfspec-macos
+            extension: ''
+          - os: windows-latest
+            target: windows
+            artifact: dfspec-windows
+            extension: '.exe'
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dart-lang/setup-dart@v1
+        with:
+          sdk: ${{ env.DART_SDK }}
+
+      - name: Install dependencies
+        run: dart pub get
+
+      - name: Compile CLI
+        run: dart compile exe bin/dfspec.dart -o ${{ matrix.artifact }}${{ matrix.extension }}
+
+      - name: Test binary
+        shell: bash
         run: |
-          PUBSPEC_VERSION=$(grep '^version:' pubspec.yaml | cut -d' ' -f2)
-          TAG_VERSION="${{ steps.get_version.outputs.VERSION }}"
-          if [ "$PUBSPEC_VERSION" != "$TAG_VERSION" ]; then
-            echo "Version mismatch: pubspec.yaml=$PUBSPEC_VERSION, tag=$TAG_VERSION"
-            exit 1
-          fi
+          ./${{ matrix.artifact }}${{ matrix.extension }} --help
+          ./${{ matrix.artifact }}${{ matrix.extension }} agents
 
-      - name: Build Linux binary
-        run: dart compile exe bin/dfspec.dart -o dfspec-linux
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.artifact }}
+          path: ${{ matrix.artifact }}${{ matrix.extension }}
 
-      - name: Build macOS binary
-        if: runner.os == 'Linux'
+  # =============================================================================
+  # Etapa 3: Crear Release
+  # =============================================================================
+  release:
+    name: Create Release
+    needs: [validate, build]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Prepare release assets
         run: |
-          # Cross-compilation not supported, skip
-          echo "macOS build skipped (requires macOS runner)"
+          mkdir -p release
+          cp artifacts/dfspec-linux/dfspec-linux release/
+          cp artifacts/dfspec-macos/dfspec-macos release/
+          cp artifacts/dfspec-windows/dfspec-windows.exe release/
+
+          # Make binaries executable
+          chmod +x release/dfspec-linux
+          chmod +x release/dfspec-macos
+
+          # Create checksums
+          cd release
+          sha256sum * > checksums.txt
+          cd ..
 
       - name: Generate changelog
         id: changelog
         run: |
           # Get commits since last tag
           LAST_TAG=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "")
+
           if [ -n "$LAST_TAG" ]; then
-            CHANGES=$(git log $LAST_TAG..HEAD --pretty=format:"- %s" --no-merges)
+            CHANGES=$(git log $LAST_TAG..HEAD --pretty=format:"- %s (%h)" --no-merges | grep -v "^$" || echo "- Initial release")
+            COMPARE_URL="https://github.com/${{ github.repository }}/compare/$LAST_TAG...v${{ needs.validate.outputs.version }}"
           else
-            CHANGES=$(git log --pretty=format:"- %s" --no-merges -20)
+            CHANGES=$(git log --pretty=format:"- %s (%h)" --no-merges -20)
+            COMPARE_URL=""
           fi
-          echo "CHANGES<<EOF" >> $GITHUB_OUTPUT
-          echo "$CHANGES" >> $GITHUB_OUTPUT
-          echo "EOF" >> $GITHUB_OUTPUT
+
+          # Categorize changes
+          FEATURES=$(echo "$CHANGES" | grep -E "^- (feat|add|new)" || echo "")
+          FIXES=$(echo "$CHANGES" | grep -E "^- (fix|bug)" || echo "")
+          DOCS=$(echo "$CHANGES" | grep -E "^- (doc|docs)" || echo "")
+          OTHER=$(echo "$CHANGES" | grep -vE "^- (feat|add|new|fix|bug|doc|docs)" || echo "")
+
+          {
+            echo "CHANGES<<EOF"
+            if [ -n "$FEATURES" ]; then
+              echo "### Features"
+              echo "$FEATURES"
+              echo ""
+            fi
+            if [ -n "$FIXES" ]; then
+              echo "### Bug Fixes"
+              echo "$FIXES"
+              echo ""
+            fi
+            if [ -n "$DOCS" ]; then
+              echo "### Documentation"
+              echo "$DOCS"
+              echo ""
+            fi
+            if [ -n "$OTHER" ]; then
+              echo "### Other Changes"
+              echo "$OTHER"
+              echo ""
+            fi
+            echo "EOF"
+          } >> $GITHUB_OUTPUT
+
+          echo "COMPARE_URL=$COMPARE_URL" >> $GITHUB_OUTPUT
+          echo "LAST_TAG=$LAST_TAG" >> $GITHUB_OUTPUT
 
       - name: Create Release
         uses: softprops/action-gh-release@v1
         with:
-          name: DFSpec v${{ steps.get_version.outputs.VERSION }}
+          name: DFSpec v${{ needs.validate.outputs.version }}
           body: |
+            # DFSpec v${{ needs.validate.outputs.version }}
+
+            Spec-Driven Development (SDD) toolkit para Dart/Flutter.
+
             ## What's Changed
+
             ${{ steps.changelog.outputs.CHANGES }}
 
             ## Installation
 
-            ```bash
-            # From source
-            git clone https://github.com/juansuarez-pragma/dfspec-ai.git
-            cd dfspec-ai
-            dart pub global activate --source path .
+            ### From Binary
 
-            # Or download binary
-            chmod +x dfspec-linux
-            ./dfspec-linux --help
+            ```bash
+            # Linux
+            curl -L https://github.com/${{ github.repository }}/releases/download/v${{ needs.validate.outputs.version }}/dfspec-linux -o dfspec
+            chmod +x dfspec
+            ./dfspec --help
+
+            # macOS
+            curl -L https://github.com/${{ github.repository }}/releases/download/v${{ needs.validate.outputs.version }}/dfspec-macos -o dfspec
+            chmod +x dfspec
+            ./dfspec --help
+
+            # Windows (PowerShell)
+            Invoke-WebRequest -Uri "https://github.com/${{ github.repository }}/releases/download/v${{ needs.validate.outputs.version }}/dfspec-windows.exe" -OutFile "dfspec.exe"
+            .\dfspec.exe --help
             ```
 
+            ### From Source
+
+            ```bash
+            git clone https://github.com/${{ github.repository }}.git
+            cd dfspec-ia
+            dart pub global activate --source path .
+            dfspec --help
+            ```
+
+            ## Checksums
+
+            Verify your download with the checksums in `checksums.txt`.
+
             ## Full Changelog
-            https://github.com/juansuarez-pragma/dfspec-ai/compare/${{ env.LAST_TAG }}...v${{ steps.get_version.outputs.VERSION }}
+
+            ${{ steps.changelog.outputs.COMPARE_URL }}
           files: |
-            dfspec-linux
+            release/dfspec-linux
+            release/dfspec-macos
+            release/dfspec-windows.exe
+            release/checksums.txt
           draft: false
-          prerelease: false
+          prerelease: ${{ contains(needs.validate.outputs.version, '-') }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  # =============================================================================
+  # Etapa 4: Notificación (Opcional)
+  # =============================================================================
+  notify:
+    name: Notify
+    needs: [validate, release]
+    runs-on: ubuntu-latest
+    if: always()
+    steps:
+      - name: Release Summary
+        run: |
+          echo "## Release Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Version:** v${{ needs.validate.outputs.version }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Status:** ${{ needs.release.result }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Artifacts" >> $GITHUB_STEP_SUMMARY
+          echo "- dfspec-linux" >> $GITHUB_STEP_SUMMARY
+          echo "- dfspec-macos" >> $GITHUB_STEP_SUMMARY
+          echo "- dfspec-windows.exe" >> $GITHUB_STEP_SUMMARY

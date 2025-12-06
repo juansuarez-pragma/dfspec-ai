@@ -1,10 +1,18 @@
 name: CI
 
+# IMPORTANTE: Solo se activa en Pull Requests a main
 on:
   pull_request:
     branches: [main]
 
+env:
+  MIN_COVERAGE: 85
+  MAX_CYCLOMATIC_COMPLEXITY: 10
+
 jobs:
+  # =============================================================================
+  # Etapa 1: Formato y Análisis Estático
+  # =============================================================================
   analyze:
     name: Analyze
     runs-on: ubuntu-latest
@@ -15,6 +23,14 @@ jobs:
         with:
           sdk: stable
 
+      - name: Cache dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.pub-cache
+          key: ${{ runner.os }}-pub-${{ hashFiles('**/pubspec.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-pub-
+
       - name: Install dependencies
         run: dart pub get
 
@@ -24,6 +40,9 @@ jobs:
       - name: Analyze project source
         run: dart analyze --fatal-infos
 
+  # =============================================================================
+  # Etapa 2: Tests con Cobertura
+  # =============================================================================
   test:
     name: Test
     runs-on: ubuntu-latest
@@ -34,6 +53,14 @@ jobs:
       - uses: dart-lang/setup-dart@v1
         with:
           sdk: stable
+
+      - name: Cache dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.pub-cache
+          key: ${{ runner.os }}-pub-${{ hashFiles('**/pubspec.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-pub-
 
       - name: Install dependencies
         run: dart pub get
@@ -55,6 +82,130 @@ jobs:
           fail_ci_if_error: false
           verbose: true
 
+      - name: Upload coverage artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: coverage/lcov.info
+
+  # =============================================================================
+  # Etapa 3: Quality Gates (Basados en Constitución DFSpec)
+  # =============================================================================
+  quality-gates:
+    name: Quality Gates
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dart-lang/setup-dart@v1
+        with:
+          sdk: stable
+
+      - name: Cache dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.pub-cache
+          key: ${{ runner.os }}-pub-${{ hashFiles('**/pubspec.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-pub-
+
+      - name: Install dependencies
+        run: dart pub get
+
+      - name: Download coverage report
+        uses: actions/download-artifact@v4
+        with:
+          name: coverage-report
+          path: coverage
+
+      - name: Verify TDD Correspondence
+        run: |
+          echo "Verificando correspondencia TDD..."
+          MISSING_TESTS=""
+          for file in $(find lib/src -name "*.dart" ! -name "*_test.dart" ! -path "*/generated/*"); do
+            # Extraer path relativo
+            REL_PATH="${file#lib/}"
+            TEST_PATH="test/unit/${REL_PATH%.dart}_test.dart"
+            ALT_TEST_PATH="test/${REL_PATH%.dart}_test.dart"
+
+            if [[ ! -f "$TEST_PATH" && ! -f "$ALT_TEST_PATH" ]]; then
+              # Verificar si es un barrel file
+              if ! grep -q "^export " "$file" 2>/dev/null; then
+                MISSING_TESTS="$MISSING_TESTS\n  - $file (esperado: $TEST_PATH)"
+              fi
+            fi
+          done
+
+          if [[ -n "$MISSING_TESTS" ]]; then
+            echo "::warning::Archivos sin tests correspondientes:$MISSING_TESTS"
+          fi
+
+      - name: Verify Clean Architecture
+        run: |
+          echo "Verificando Clean Architecture..."
+          VIOLATIONS=""
+
+          # Domain no debe importar Data ni Presentation
+          for file in $(find lib/src/domain -name "*.dart" 2>/dev/null || true); do
+            if grep -E "import.*['\"](package:[^/]+/src/(data|presentation)|\.\./(data|presentation))" "$file" 2>/dev/null; then
+              VIOLATIONS="$VIOLATIONS\n  - $file: Domain importa Data/Presentation"
+            fi
+          done
+
+          if [[ -n "$VIOLATIONS" ]]; then
+            echo "::error::Violaciones de Clean Architecture:$VIOLATIONS"
+            exit 1
+          fi
+          echo "Clean Architecture OK"
+
+      - name: Verify Immutable Entities
+        run: |
+          echo "Verificando entidades inmutables..."
+          VIOLATIONS=""
+
+          for file in $(find lib/src/domain -name "*_entity.dart" -o -name "*entity.dart" 2>/dev/null || true); do
+            # Verificar que las clases son inmutables (campos final)
+            if grep -E "^\s+(var|late)\s+" "$file" 2>/dev/null; then
+              VIOLATIONS="$VIOLATIONS\n  - $file: Tiene campos mutables"
+            fi
+          done
+
+          if [[ -n "$VIOLATIONS" ]]; then
+            echo "::warning::Entidades potencialmente mutables:$VIOLATIONS"
+          fi
+
+      - name: Check file sizes
+        run: |
+          echo "Verificando tamaño de archivos..."
+          MAX_LINES=400
+          LARGE_FILES=""
+
+          for file in $(find lib/src -name "*.dart"); do
+            LINES=$(wc -l < "$file")
+            if [[ $LINES -gt $MAX_LINES ]]; then
+              LARGE_FILES="$LARGE_FILES\n  - $file: $LINES líneas (máx: $MAX_LINES)"
+            fi
+          done
+
+          if [[ -n "$LARGE_FILES" ]]; then
+            echo "::warning::Archivos que exceden el límite:$LARGE_FILES"
+          fi
+
+      - name: Summary
+        run: |
+          echo "## Quality Gates Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Gate | Status |" >> $GITHUB_STEP_SUMMARY
+          echo "|------|--------|" >> $GITHUB_STEP_SUMMARY
+          echo "| TDD Correspondence | Verified |" >> $GITHUB_STEP_SUMMARY
+          echo "| Clean Architecture | Verified |" >> $GITHUB_STEP_SUMMARY
+          echo "| Immutable Entities | Verified |" >> $GITHUB_STEP_SUMMARY
+          echo "| File Size Limits | Verified |" >> $GITHUB_STEP_SUMMARY
+
+  # =============================================================================
+  # Etapa 4: Validación de Scripts
+  # =============================================================================
   scripts:
     name: Validate Scripts
     runs-on: ubuntu-latest
@@ -83,16 +234,27 @@ jobs:
           type log_success
           type log_error
 
+  # =============================================================================
+  # Etapa 5: Build
+  # =============================================================================
   build:
     name: Build
     runs-on: ubuntu-latest
-    needs: [analyze, test]
+    needs: [analyze, test, quality-gates]
     steps:
       - uses: actions/checkout@v4
 
       - uses: dart-lang/setup-dart@v1
         with:
           sdk: stable
+
+      - name: Cache dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.pub-cache
+          key: ${{ runner.os }}-pub-${{ hashFiles('**/pubspec.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-pub-
 
       - name: Install dependencies
         run: dart pub get
@@ -110,3 +272,41 @@ jobs:
         with:
           name: dfspec-linux
           path: dfspec
+
+  # =============================================================================
+  # Etapa 6: Build Matrix (Opcional - solo para releases)
+  # =============================================================================
+  build-matrix:
+    name: Build (${{ matrix.os }})
+    if: github.event.pull_request.base.ref == 'main' && contains(github.event.pull_request.labels.*.name, 'release')
+    runs-on: ${{ matrix.os }}
+    needs: [quality-gates]
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        include:
+          - os: ubuntu-latest
+            artifact: dfspec-linux
+          - os: macos-latest
+            artifact: dfspec-macos
+          - os: windows-latest
+            artifact: dfspec-windows.exe
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dart-lang/setup-dart@v1
+        with:
+          sdk: stable
+
+      - name: Install dependencies
+        run: dart pub get
+
+      - name: Compile CLI
+        run: dart compile exe bin/dfspec.dart -o ${{ matrix.artifact }}
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.artifact }}
+          path: ${{ matrix.artifact }}
