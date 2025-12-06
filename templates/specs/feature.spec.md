@@ -7,7 +7,6 @@
 | **Branch** | `{{BRANCH_NAME}}` |
 | **Proyecto** | {{PROJECT_NAME}} ({{PROJECT_TYPE}}) |
 | **Estado** | Draft &#124; In Review &#124; Approved &#124; Implemented &#124; Verified |
-| **Prioridad** | P1 &#124; P2 &#124; P3 |
 | **Creado** | {{DATE}} |
 
 ---
@@ -18,41 +17,77 @@
 
 ---
 
-## User Stories & Testing
+## User Stories
 
-### User Story 1: {{STORY_TITLE}} (Priority: P1)
+### US-001: {{STORY_TITLE}} (Priority: P1 - MVP)
 
-**Por que esta prioridad:** {{PRIORITY_JUSTIFICATION}}
+**Como** {{ROL_USUARIO}}
+**Quiero** {{FUNCIONALIDAD_DESEADA}}
+**Para** {{BENEFICIO_ESPERADO}}
 
-**Test Independiente:** {{SINGLE_TEST_CRITERIA}}
+#### Por que P1 (MVP)
+{{JUSTIFICACION_PRIORIDAD}}
 
-**Escenarios de Aceptacion:**
-```gherkin
-DADO {{contexto_inicial}}
-CUANDO {{accion_del_usuario}}
-ENTONCES {{resultado_esperado}}
-Y {{validacion_adicional}}
-```
+#### Criterios de Aceptacion
+- [ ] AC-001: Given {{contexto_inicial}} When {{accion_usuario}} Then {{resultado_esperado}}
+- [ ] AC-002: Given {{otro_contexto}} When {{otra_accion}} Then {{otro_resultado}}
+- [ ] AC-003: Given {{error_condition}} When {{trigger}} Then {{error_handling}}
 
-### User Story 2: {{STORY_TITLE}} (Priority: P2)
+#### Test Independiente
+Si - {{RAZON_TESTABILIDAD}}
 
-**Por que esta prioridad:** {{PRIORITY_JUSTIFICATION}}
+#### Requisitos Relacionados
+- FR-001
+- FR-002
 
-**Test Independiente:** {{SINGLE_TEST_CRITERIA}}
+---
 
-**Escenarios de Aceptacion:**
-```gherkin
-DADO {{contexto}}
-CUANDO {{accion}}
-ENTONCES {{resultado}}
-```
+### US-002: {{STORY_TITLE}} (Priority: P2)
+
+**Como** {{ROL_USUARIO}}
+**Quiero** {{FUNCIONALIDAD_DESEADA}}
+**Para** {{BENEFICIO_ESPERADO}}
+
+#### Por que P2
+{{JUSTIFICACION_PRIORIDAD}}
+
+#### Criterios de Aceptacion
+- [ ] AC-004: Given {{contexto}} When {{accion}} Then {{resultado}}
+- [ ] AC-005: Given {{contexto}} When {{accion}} Then {{resultado}}
+
+#### Test Independiente
+Si - {{RAZON_TESTABILIDAD}}
+
+#### Requisitos Relacionados
+- FR-003
+
+---
+
+### US-003: {{STORY_TITLE}} (Priority: P3 - Nice-to-have)
+
+**Como** {{ROL_USUARIO}}
+**Quiero** {{FUNCIONALIDAD_DESEADA}}
+**Para** {{BENEFICIO_ESPERADO}}
+
+#### Por que P3
+{{JUSTIFICACION_PRIORIDAD}}
+
+#### Criterios de Aceptacion
+- [ ] AC-006: Given {{contexto}} When {{accion}} Then {{resultado}}
+
+#### Test Independiente
+No - {{RAZON_DEPENDENCIA}}
+
+#### Requisitos Relacionados
+- FR-004
 
 ---
 
 ## Requisitos Funcionales
 
-### RF-01: {{REQUIREMENT_NAME}}
+### FR-001: {{REQUIREMENT_NAME}}
 - **Descripcion:** System MUST {{descripcion_clara}}
+- **User Story:** US-001
 - **Actor:** {{usuario_o_sistema}}
 - **Precondiciones:** {{que_debe_existir_antes}}
 - **Flujo Principal:**
@@ -62,8 +97,9 @@ ENTONCES {{resultado}}
 - **Flujo Alternativo:** {{manejo_de_errores}}
 - **Postcondiciones:** {{estado_final}}
 
-### RF-02: {{REQUIREMENT_NAME}}
+### FR-002: {{REQUIREMENT_NAME}}
 - **Descripcion:** System MUST {{descripcion}}
+- **User Story:** US-001
 - **Actor:** {{actor}}
 - **Precondiciones:** {{precondiciones}}
 - **Flujo Principal:**
@@ -71,7 +107,15 @@ ENTONCES {{resultado}}
   2. {{paso_2}}
 - **Postcondiciones:** {{resultado}}
 
-### RF-03: [NEEDS CLARIFICATION: {{pregunta}}? Options: A) ..., B) ...]
+### FR-003: {{REQUIREMENT_NAME}}
+- **Descripcion:** System SHOULD {{descripcion}}
+- **User Story:** US-002
+- **Actor:** {{actor}}
+- **Flujo Principal:**
+  1. {{paso_1}}
+  2. {{paso_2}}
+
+### FR-004: [NEEDS CLARIFICATION: {{pregunta}}? Options: A) ..., B) ...]
 
 ---
 
@@ -99,39 +143,12 @@ ENTONCES {{resultado}}
 
 ---
 
-## Criterios de Aceptacion
-
-### CA-01: {{NOMBRE_CRITERIO}}
-```gherkin
-DADO [contexto/precondicion]
-CUANDO [accion del usuario/sistema]
-ENTONCES [resultado esperado]
-Y [validacion adicional]
-```
-
-### CA-02: {{NOMBRE_CRITERIO}}
-```gherkin
-DADO [contexto]
-CUANDO [accion]
-ENTONCES [resultado]
-```
-
-### CA-03: Manejo de Errores
-```gherkin
-DADO que ocurre un error de [tipo]
-CUANDO el sistema detecta el error
-ENTONCES muestra mensaje amigable al usuario
-Y registra el error para debugging
-```
-
----
-
 ## Entidades Clave
 
-| Entidad | Descripcion | Atributos Principales |
-|---------|-------------|----------------------|
-| {{Entity1}} | {{descripcion}} | id, name, createdAt |
-| {{Entity2}} | {{descripcion}} | id, value, type |
+| Entidad | Descripcion | Atributos Principales | User Story |
+|---------|-------------|----------------------|------------|
+| {{Entity1}} | {{descripcion}} | id, name, createdAt | US-001 |
+| {{Entity2}} | {{descripcion}} | id, value, type | US-002 |
 
 ---
 
@@ -148,6 +165,7 @@ Y registra el error para debugging
 
 #### GET {{ENDPOINT_PATH}}
 **Descripcion:** {{descripcion}}
+**User Story:** US-001
 
 **Parametros:**
 | Nombre | Tipo | Requerido | Descripcion |
@@ -243,6 +261,16 @@ dependencies:
 
 ---
 
+## Matriz de Trazabilidad
+
+| User Story | Requisitos | Criterios | Entidades | Endpoints |
+|------------|------------|-----------|-----------|-----------|
+| US-001 (P1) | FR-001, FR-002 | AC-001, AC-002, AC-003 | Entity1 | GET /endpoint |
+| US-002 (P2) | FR-003 | AC-004, AC-005 | Entity2 | POST /endpoint |
+| US-003 (P3) | FR-004 | AC-006 | - | - |
+
+---
+
 ## Riesgos Identificados
 
 | Riesgo | Probabilidad | Impacto | Mitigacion |
@@ -257,6 +285,33 @@ dependencies:
 | Fecha | Pregunta | Respuesta | Decidido Por |
 |-------|----------|-----------|--------------|
 | | | | |
+
+---
+
+## Checklist de Validacion
+
+### Completitud
+- [ ] Todos los requisitos funcionales tienen ID (FR-XXX)
+- [ ] Todas las User Stories tienen prioridad (P1/P2/P3)
+- [ ] Cada US tiene al menos un criterio de aceptacion
+- [ ] No hay [NEEDS CLARIFICATION] sin resolver (max 3 permitidos)
+- [ ] Cada FR esta mapeado a al menos una US
+
+### Calidad
+- [ ] Requisitos son SMART (Specific, Measurable, Achievable, Relevant, Time-bound)
+- [ ] No hay ambiguedades en la descripcion
+- [ ] Scope esta bien definido
+- [ ] User Stories siguen formato "Como/Quiero/Para"
+
+### Trazabilidad
+- [ ] FR -> US mapping completo
+- [ ] US -> AC mapping completo
+- [ ] Matriz de trazabilidad actualizada
+
+### MVP Definition
+- [ ] Al menos una US es P1 (MVP)
+- [ ] MVP puede entregarse independientemente
+- [ ] MVP tiene valor de negocio
 
 ---
 
