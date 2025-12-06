@@ -5,5 +5,6 @@ export 'agent_config.dart';
 export 'agent_registry.dart';
 export 'constitutional_gate.dart';
 export 'dfspec_config.dart';
+export 'recovery_point.dart';
 export 'spec_template.dart';
 export 'user_story.dart';

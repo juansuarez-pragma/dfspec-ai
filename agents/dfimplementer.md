@@ -665,6 +665,112 @@ Formatted 0 files
 ```
 </output_format>
 
+<recovery_protocol>
+## Sistema de Recovery Points TDD
+
+### Principio de Recovery
+> **"Cada test verde es un punto seguro de recuperación"**
+> Si algo falla, siempre puedes volver al último estado donde todos los tests pasaban.
+
+### Tipos de Recovery Points
+
+| Tipo | Momento | Prioridad |
+|------|---------|-----------|
+| `greenTest` | Después de cada test verde | Baja |
+| `preRefactor` | Antes de refactorizar | Media |
+| `componentComplete` | Componente terminado | Alta |
+| `milestone` | Feature/módulo completo | Máxima |
+
+### Flujo de Recovery en TDD
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                    CICLO TDD CON RECOVERY                        │
+└─────────────────────────────────────────────────────────────────┘
+
+  RED → Test falla
+    │
+    ▼
+  GREEN → Test pasa ──→ 🔵 CHECKPOINT: greenTest
+    │
+    ▼
+  REFACTOR
+    │
+    ├── 🔵 CHECKPOINT: preRefactor (antes)
+    │
+    ├── Refactorizar...
+    │
+    └── ¿Tests pasan?
+          │
+          ├── SÍ → Continuar ──→ 🔵 CHECKPOINT: componentComplete
+          │
+          └── NO → ⚠️ RECOVERY: Volver a preRefactor
+```
+
+### Comandos de Recovery
+
+```bash
+# Ver puntos de recovery disponibles
+dfspec recovery list --feature=<feature>
+
+# Crear checkpoint manual
+dfspec recovery create --feature=<feature> --component=<component>
+
+# Recuperar al último punto estable
+dfspec recovery restore --feature=<feature>
+
+# Recuperar a punto específico
+dfspec recovery restore --feature=<feature> --point=<id>
+```
+
+### Cuándo Crear Checkpoints
+
+1. **Automático (greenTest):**
+   - Después de cada `dart test` exitoso
+   - Guarda: archivos modificados, resultados de test
+
+2. **Semi-automático (preRefactor):**
+   - SIEMPRE antes de iniciar fase REFACTOR
+   - Permite rollback si refactor rompe algo
+
+3. **Manual (componentComplete):**
+   - Al completar: entity, usecase, repository, bloc/provider
+   - Checkpoint con descripción
+
+4. **Milestone:**
+   - Al completar feature completa
+   - Checkpoint persistente (no se elimina en limpieza)
+
+### Protocolo de Recovery
+
+```
+SI tests empiezan a fallar después de cambios:
+
+1. IDENTIFICAR punto de fallo
+   dart test --reporter expanded
+
+2. EVALUAR opciones:
+   a) Fix simple → Corregir directamente
+   b) Cambio complejo → Considerar recovery
+
+3. SI recovery necesario:
+   dfspec recovery list --feature=<feature>
+   dfspec recovery restore --point=<last-stable>
+
+4. REINTENTAR desde punto estable
+```
+
+### Integración con TDD
+
+| Fase TDD | Acción Recovery |
+|----------|-----------------|
+| RED | No aplica (test debe fallar) |
+| GREEN | `createGreenCheckpoint()` |
+| Pre-REFACTOR | `createPreRefactorCheckpoint()` |
+| Post-REFACTOR | Verificar tests, considerar checkpoint |
+| Componente OK | `createComponentCheckpoint()` |
+</recovery_protocol>
+
 <constraints>
 ## Restricciones TDD Inquebrantables
 
