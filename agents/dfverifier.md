@@ -524,6 +524,99 @@ La implementacion cumple con observaciones menores.
 "Implementacion APROBADA/RECHAZADA"
 </coordination>
 
+<constitutional_validation>
+## Validacion Constitucional
+
+ANTES de aprobar cualquier implementacion, VERIFICAR conformidad con la Constitucion DFSpec (memory/constitution.md).
+
+### Gates Criticos (Obligatorios)
+
+| Gate | Articulo | Validacion |
+|------|----------|------------|
+| Clean Architecture | I | Domain NO importa data/presentation |
+| TDD | II | Cada lib/*.dart tiene test/*.dart |
+| Entidades Inmutables | III | Entities extienden Equatable, campos final |
+| Modelo-Entidad | IV | Models en data/, Entities en domain/ |
+| Interfaces Domain | V | Repositories abstractos en domain/ |
+| UseCases Atomicos | VI | Un metodo call() por UseCase |
+
+### Gates Warning (Advertencias)
+
+| Gate | Articulo | Validacion |
+|------|----------|------------|
+| State Management | VII | Un solo patron (Riverpod/BLoC) |
+| Error Handling | VIII | Excepciones tipadas, no Exception() |
+| Cobertura | IX | >85% global, >95% domain |
+| Performance | X | const, keys, ListView.builder |
+| Documentacion | XI | Doc comments en APIs publicas |
+
+### Protocolo de Validacion
+
+```bash
+# 1. Verificar Clean Architecture en domain/
+Grep: "import.*'/data/'" path:lib/src/domain/
+# Si encuentra imports -> RECHAZAR
+
+# 2. Verificar correspondencia test
+for file in lib/src/**/*.dart:
+  expected_test = test/unit/**/${filename}_test.dart
+  Glob: ${expected_test}
+  # Si no existe -> Agregar a FALTANTES
+
+# 3. Verificar entidades inmutables
+Grep: "extends Equatable" path:lib/src/domain/entities/
+# Cada entity debe tener match
+
+# 4. Verificar separacion modelo-entidad
+Grep: "fromJson" path:lib/src/domain/entities/
+# Si encuentra fromJson en entities -> RECHAZAR
+
+# 5. Verificar interfaces
+Grep: "abstract class.*Repository" path:lib/src/domain/repositories/
+# Cada repository debe ser abstract
+
+# 6. Verificar UseCases
+Grep: "call\(" path:lib/src/domain/usecases/
+# Cada usecase debe tener call()
+```
+
+### Resultado Constitutional
+
+```
+## VALIDACION CONSTITUCIONAL
+
+| Gate | Estado | Evidencia |
+|------|--------|-----------|
+| I - Clean Architecture | PASS/FAIL | [detalles] |
+| II - TDD | PASS/FAIL | [detalles] |
+| III - Entidades Inmutables | PASS/FAIL | [detalles] |
+| IV - Modelo-Entidad | PASS/FAIL | [detalles] |
+| V - Interfaces Domain | PASS/FAIL | [detalles] |
+| VI - UseCases Atomicos | PASS/FAIL | [detalles] |
+| VII - State Management | PASS/WARN | [detalles] |
+| VIII - Error Handling | PASS/WARN | [detalles] |
+| IX - Cobertura | PASS/WARN | [detalles] |
+| X - Performance | PASS/WARN | [detalles] |
+| XI - Documentacion | PASS/INFO | [detalles] |
+
+**Conformidad Constitutional:** [X]%
+
+CRITERIO DE APROBACION:
+- Gates I-VI: TODOS deben pasar
+- Gates VII-IX: Pueden tener warnings con justificacion
+- Gates X-XI: Informativos
+```
+
+Si CUALQUIER gate critico (I-VI) falla:
+```
+DECISION: RECHAZADO
+RAZON: Violacion de Constitucion DFSpec
+ARTICULO: [numero]
+VIOLACION: [descripcion]
+ACCION REQUERIDA: [correccion]
+```
+</constitutional_validation>
+
 <context>
 Proyecto: CLI Dart con Clean Architecture
 Verificaciones requeridas:
@@ -534,4 +627,5 @@ Verificaciones requeridas:
 - Checklist del plan 100%
 - pubspec.yaml valido
 - Todos los agentes aprobaron
+- CONSTITUCION: Gates I-VI aprobados
 </context>

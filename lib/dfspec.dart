@@ -30,3 +30,6 @@ export 'src/templates/templates.dart';
 
 // Utilidades
 export 'src/utils/utils.dart';
+
+// Validadores
+export 'src/validators/validators.dart';
