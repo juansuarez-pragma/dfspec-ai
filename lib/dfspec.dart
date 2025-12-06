@@ -10,8 +10,17 @@ export 'src/commands/commands.dart';
 // Generadores
 export 'src/generators/generators.dart';
 
+// Invokers
+export 'src/invokers/invokers.dart';
+
+// Loaders
+export 'src/loaders/loaders.dart';
+
 // Modelos
 export 'src/models/models.dart';
+
+// Parsers
+export 'src/parsers/parsers.dart';
 
 // Templates
 export 'src/templates/templates.dart';

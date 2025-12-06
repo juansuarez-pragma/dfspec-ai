@@ -24,14 +24,27 @@ y este proyecto adhiere a [Semantic Versioning](https://semver.org/lang/es/).
 #### Calidad de Código
 - Aplicadas cascade invocations en generadores y comandos
 - Agregado language specifier a code blocks en documentación
-- Resueltas advertencias de linting (214 tests, 0 errores)
+- Resueltas advertencias de linting (235 tests, 0 errores)
 
 ### Agregado
+
+#### Sistema de Invocación Multi-Agente
+- `AgentInvoker` - Invoca agentes con el modelo correcto (opus/sonnet/haiku)
+- `AgentInvocation` - Representa una invocación lista para ejecutar
+- Soporte para invocaciones paralelas y pipelines secuenciales
+- Protocolo de invocación documentado en `dforchestrator.md`
+
+#### Agentes
 - Agente `dfspec` - Crear/analizar especificaciones (antes solo command)
 - Agente `dfstatus` - Estado del proyecto (antes solo command)
+- Campo `model` en frontmatter YAML (opus, sonnet, haiku)
+
+#### Documentación
 - Documentación de arquitectura en README.md
 - Diagrama de flujo de datos
 - Sección de estructura del proyecto
+- Tabla de agentes con modelos recomendados
+- Ejemplo de invocación multi-agente
 
 ## [0.1.0] - 2024-12-06
 

@@ -164,6 +164,118 @@ Usuario -> Orquestador -> MCP1 -> Agente -> MCP2 -> Usuario
 ```
 </execution_modes>
 
+<agent_invocation_protocol>
+## Protocolo de Invocación Multi-Agente
+
+### Modelos por Agente
+
+Cada agente tiene un modelo recomendado definido en su archivo:
+
+| Agente | Modelo | Justificación |
+|--------|--------|---------------|
+| dfplanner | opus | Razonamiento complejo, arquitectura |
+| dfimplementer | opus | TDD requiere análisis profundo |
+| dftest | opus | Estrategias de testing complejas |
+| dfsolid | opus | Análisis de principios SOLID |
+| dfsecurity | opus | OWASP requiere expertise |
+| dfperformance | opus | Optimización requiere análisis |
+| dfcodequality | opus | Métricas y análisis |
+| dfdocumentation | opus | Documentación completa |
+| dfdependencies | opus | Evaluación de seguridad |
+| dfverifier | opus | Verificación exhaustiva |
+| dforchestrator | opus | Coordinación compleja |
+| dfspec | opus | Análisis de especificaciones |
+| dfstatus | haiku | Tareas simples de reporte |
+
+### Cómo Invocar un Agente
+
+Para invocar un agente especializado, usa la herramienta **Task** con estos parámetros:
+
+```
+Task(
+  subagent_type: "general-purpose",
+  model: "<modelo_del_agente>",  // opus, sonnet, o haiku
+  description: "<descripción_corta>",
+  prompt: "<contenido_del_agente> + <tarea_específica>"
+)
+```
+
+### Ejemplo: Invocar dfplanner
+
+```
+Task(
+  subagent_type: "general-purpose",
+  model: "opus",
+  description: "Planning: Diseñar sistema de favoritos",
+  prompt: """
+    [Contenido completo del agente dfplanner desde agents/dfplanner.md]
+
+    ---
+
+    ## TAREA ASIGNADA
+
+    Diseña la arquitectura para implementar un sistema de favoritos
+    que permita a los usuarios guardar productos.
+
+    ## CONTEXTO
+
+    - project: mi-app-flutter
+    - architecture: Clean Architecture
+    - state_management: Riverpod
+  """
+)
+```
+
+### Invocación Paralela
+
+Para ejecutar múltiples agentes en paralelo, envía múltiples llamadas Task
+en un solo mensaje:
+
+```
+[En un solo mensaje, ejecutar:]
+
+Task(model: "opus", prompt: "[dfcodequality] + tarea")
+Task(model: "opus", prompt: "[dfperformance] + tarea")
+Task(model: "opus", prompt: "[dfdocumentation] + tarea")
+```
+
+### Invocación en Pipeline
+
+Para pipelines secuenciales, cada agente debe recibir el output del anterior:
+
+```
+Paso 1: Task(model: "opus", prompt: "[dfplanner] + tarea_inicial")
+        -> Capturar output como PLAN
+
+Paso 2: Task(model: "opus", prompt: "[dfsolid] + validar PLAN")
+        -> Capturar output como VALIDATION
+
+Paso 3: Task(model: "opus", prompt: "[dfimplementer] + implementar según PLAN y VALIDATION")
+        -> Capturar output como IMPLEMENTATION
+
+...continuar hasta dfverifier...
+```
+
+### Reglas de Invocación
+
+1. **SIEMPRE usar el modelo definido en el agente** (excepto override explícito)
+2. **INCLUIR el contenido completo del agente** en el prompt
+3. **SEPARAR claramente** el system prompt del agente de la tarea específica
+4. **PASAR contexto relevante** del proyecto y pasos anteriores
+5. **En pipelines**, indicar posición en el pipeline (paso N de M)
+
+### Escalación de Modelo
+
+En casos especiales, puedes sobrescribir el modelo:
+
+| Situación | Acción |
+|-----------|--------|
+| Tarea muy simple | Usar haiku para dfstatus |
+| Tarea crítica de seguridad | Mantener opus para dfsecurity |
+| Budget limitado | Considerar sonnet (menor costo) |
+| Máxima calidad requerida | Usar opus siempre |
+</agent_invocation_protocol>
+
 <phased_execution>
 ## Ejecución por Fases (Gestión de Complejidad)
 

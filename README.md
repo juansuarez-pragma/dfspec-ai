@@ -6,7 +6,7 @@
 [![Flutter](https://img.shields.io/badge/Flutter-Compatible-02569B)](https://flutter.dev)
 [![License](https://img.shields.io/badge/License-MIT-green)](LICENSE)
 [![Multi-Agent](https://img.shields.io/badge/AI%20Agents-17%20Supported-purple)](https://github.com/juansuarez-pragma/dfspec-ai)
-[![Tests](https://img.shields.io/badge/Tests-214%20Passing-brightgreen)](test/)
+[![Tests](https://img.shields.io/badge/Tests-235%20Passing-brightgreen)](test/)
 
 DFSpec es un toolkit **multi-agente** que implementa **Spec-Driven Development (SDD)** especializado para proyectos Dart y Flutter. Transforma especificaciones en implementaciones de alta calidad siguiendo TDD estricto y Clean Architecture.
 
@@ -64,9 +64,10 @@ dfspec-ia/
 ├── lib/src/
 │   ├── loaders/              # Carga agentes desde archivos
 │   ├── parsers/              # Parsea YAML frontmatter
+│   ├── invokers/             # Invocacion multi-agente con modelos
 │   ├── generators/           # Genera comandos para cada plataforma
 │   └── commands/             # CLI commands
-└── test/                     # 214+ tests
+└── test/                     # 235+ tests
 ```
 
 ### Flujo de Datos
@@ -75,6 +76,9 @@ dfspec-ia/
 agents/*.md → AgentLoader → AgentRegistry → CommandTemplate → CommandGenerator → .claude/commands/
                                                                               → .gemini/commands/
                                                                               → .cursor/commands/
+
+Para invocacion multi-agente:
+agents/*.md → AgentLoader → AgentInvoker → Task(model, prompt) → Claude Code Task tool
 ```
 
 ### Formato de Agente
@@ -322,21 +326,41 @@ DFSpec proporciona **13 comandos slash** disponibles en todas las plataformas so
 
 DFSpec incluye **13 agentes** especializados definidos en la carpeta `agents/`:
 
-| Agente | Comando | Rol | Capacidades |
-|--------|---------|-----|-------------|
-| **dfspec** | `/df-spec` | Especificador | Requisitos funcionales, criterios de aceptacion |
-| **dfplanner** | `/df-plan` | Arquitecto | Diseno de features, arquitectura, state management |
-| **dfimplementer** | `/df-implement` | Desarrollador | TDD estricto, BLoC, Riverpod, Provider |
-| **dftest** | `/df-test` | QA | Tests unitarios, widget, integracion, golden |
-| **dfverifier** | `/df-verify` | Auditor | Verificacion spec vs implementacion |
-| **dfstatus** | `/df-status` | Dashboard | Estado del proyecto, metricas |
-| **dfsolid** | `/df-review` | Guardian SOLID | Validar principios SOLID, DRY, YAGNI |
-| **dfsecurity** | `/df-security` | Seguridad | OWASP Mobile Top 10, Platform Channels |
-| **dfperformance** | `/df-performance` | Performance | 60fps, widget rebuilds, memory leaks |
-| **dfcodequality** | `/df-quality` | Calidad | Complejidad ciclomatica/cognitiva |
-| **dfdocumentation** | `/df-docs` | Documentacion | Effective Dart, README |
-| **dfdependencies** | `/df-deps` | Dependencias | pub.dev, slopsquatting, deprecaciones |
-| **dforchestrator** | `/df-orchestrate` | Coordinador | Pipelines de agentes |
+| Agente | Comando | Modelo | Rol |
+|--------|---------|--------|-----|
+| **dfspec** | `/df-spec` | opus | Especificador de requisitos |
+| **dfplanner** | `/df-plan` | opus | Arquitecto de soluciones |
+| **dfimplementer** | `/df-implement` | opus | Desarrollador TDD |
+| **dftest** | `/df-test` | opus | Especialista QA |
+| **dfverifier** | `/df-verify` | opus | Auditor de completitud |
+| **dfstatus** | `/df-status` | haiku | Dashboard y metricas |
+| **dfsolid** | `/df-review` | opus | Guardian SOLID |
+| **dfsecurity** | `/df-security` | opus | Seguridad OWASP |
+| **dfperformance** | `/df-performance` | opus | Auditor 60fps |
+| **dfcodequality** | `/df-quality` | opus | Analista de calidad |
+| **dfdocumentation** | `/df-docs` | opus | Documentacion |
+| **dfdependencies** | `/df-deps` | opus | Gestion dependencias |
+| **dforchestrator** | `/df-orchestrate` | opus | Coordinador pipelines |
+
+### Invocacion Multi-Agente
+
+Cuando un agente (como `dforchestrator`) necesita invocar a otro agente, usa el sistema de invocacion con el modelo correcto:
+
+```dart
+// El orquestador puede invocar dfplanner con su modelo configurado (opus)
+final invoker = AgentInvoker();
+final invocation = invoker.createInvocation(
+  agentId: 'dfplanner',
+  task: 'Diseña arquitectura para sistema de favoritos',
+  context: {'architecture': 'Clean Architecture'},
+);
+
+// Genera parametros para Claude Code Task tool
+print(invocation.toTaskToolParams());
+// {subagent_type: "general-purpose", model: "opus", prompt: "..."}
+```
+
+El `dforchestrator` tiene documentacion detallada sobre como invocar agentes en pipelines secuenciales o paralelos.
 
 ### Agregar un Nuevo Agente
 
