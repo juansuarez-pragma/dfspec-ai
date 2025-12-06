@@ -712,6 +712,70 @@ Codigo requiere refactoring significativo.
 ```
 </output_format>
 
+<quality_metrics_integration>
+## Sistema de Métricas Automatizadas
+
+DFSpec incluye un sistema de métricas de calidad con umbrales predefinidos basados en la constitución.
+
+### Umbrales Predefinidos (QualityThresholds)
+
+| Métrica | Óptimo | Aceptable | Warning | Crítico |
+|---------|--------|-----------|---------|---------|
+| Cobertura Total | ≥90% | ≥85% | ≥70% | <70% |
+| Cobertura Domain | ≥98% | ≥95% | ≥85% | <85% |
+| Complejidad Ciclomática | ≤5 | ≤10 | ≤15 | >15 |
+| Complejidad Cognitiva | ≤5 | ≤8 | ≤12 | >12 |
+| Líneas por Archivo | ≤200 | ≤400 | ≤600 | >600 |
+| Frame Budget | ≤8ms | ≤16ms | ≤24ms | >24ms |
+| Documentación | ≥95% | ≥80% | ≥60% | <60% |
+| Duplicación | ≤3% | ≤5% | ≤10% | >10% |
+
+### Categorías de Métricas
+
+- **Coverage**: Cobertura de tests por capa
+- **Complexity**: Complejidad ciclomática y cognitiva
+- **Performance**: Frame budget, memory
+- **Maintainability**: LOC, duplicación
+- **Documentation**: API pública documentada
+- **Architecture**: Profundidad de dependencias
+
+### Uso con QualityAnalyzer
+
+```dart
+final analyzer = QualityAnalyzer(projectRoot: '.');
+final report = await analyzer.analyze();
+
+// Score general (0-100)
+print('Score: ${report.overallScore}');
+
+// Métricas por categoría
+for (final entry in report.byCategory.entries) {
+  print('${entry.key.label}:');
+  for (final metric in entry.value) {
+    print('  ${metric.severity.icon} ${metric.name}: ${metric.formattedValue}');
+  }
+}
+
+// Problemas detectados
+for (final problem in report.critical) {
+  print('CRÍTICO: ${problem.name}');
+}
+```
+
+### Reporte Markdown
+
+```bash
+# Generar reporte de calidad
+dfspec quality analyze --format=markdown
+```
+
+Genera reporte con:
+- Puntuación general (0-100)
+- Métricas por categoría con estado (✓/○/⚠/✗)
+- Problemas detectados con detalles
+- Tendencias si hay reportes anteriores
+</quality_metrics_integration>
+
 <constraints>
 - NUNCA implementar codigo, solo analizar
 - SIEMPRE reportar ubicacion exacta (archivo:linea)
