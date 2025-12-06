@@ -585,6 +585,93 @@ La documentacion cumple con Effective Dart y las mejores practicas.
 ```
 </output_format>
 
+<documentation_generator>
+## Sistema de Generación Automática de Documentación
+
+DFSpec incluye un generador de documentación para crear automáticamente:
+
+### Tipos de Documentación
+
+| Tipo | Descripción | Comando |
+|------|-------------|---------|
+| `readme` | README de feature/proyecto | `dfspec docs readme --feature=X` |
+| `architecture` | Documentación de arquitectura | `dfspec docs arch` |
+| `changelog` | Entrada de changelog | `dfspec docs changelog --version=X` |
+| `specification` | Especificación de feature | `dfspec docs spec --feature=X` |
+| `implementationPlan` | Plan de implementación | `dfspec docs plan --feature=X` |
+| `api` | Documentación de API | `dfspec docs api` |
+
+### Templates Predefinidos (DocumentationTemplates)
+
+```dart
+// README de feature
+final spec = DocumentationTemplates.featureReadme(
+  featureName: 'city-search',
+  description: 'Búsqueda de ciudades por nombre',
+  useCases: ['Buscar ciudades', 'Seleccionar ciudad'],
+  components: ['CityEntity', 'SearchCities', 'CityRepository'],
+);
+
+// Arquitectura del proyecto
+final spec = DocumentationTemplates.architecture(
+  projectName: 'MyApp',
+  layers: {
+    'Domain': 'Entidades y casos de uso',
+    'Data': 'Repositorios e implementaciones',
+  },
+);
+
+// Entrada de changelog
+final spec = DocumentationTemplates.changelog(
+  version: '1.2.0',
+  date: DateTime.now(),
+  added: ['Feature X', 'Feature Y'],
+  fixed: ['Bug Z'],
+);
+```
+
+### Uso con DocumentationGenerator
+
+```dart
+final generator = DocumentationGenerator(projectRoot: '.');
+
+// Generar README de feature
+final result = await generator.generateFeatureReadme(
+  featureName: 'city-search',
+  description: 'Búsqueda de ciudades',
+);
+
+// Verificar cobertura de documentación
+final report = await generator.verifyDocumentation();
+print('Cobertura: ${(report.coverage * 100).toStringAsFixed(1)}%');
+
+// Generar dartdoc para archivo
+final withDocs = await generator.generateApiDoc('lib/src/entity.dart');
+```
+
+### Reporte de Verificación
+
+```bash
+# Verificar documentación del proyecto
+dfspec docs verify
+
+# Salida:
+# Archivos analizados: 45
+# Cobertura: 82.5% (132/160)
+# Estado: ⚠ Por debajo del umbral (80%)
+#
+# Issues Encontrados:
+# - lib/src/domain/entity.dart:15 - class Entity: Clase sin documentación
+# - lib/src/data/model.dart:23 - method fromJson: Método sin documentación
+```
+
+### Integración con Workflow
+
+1. **Pre-commit**: Verificar cobertura >= 80%
+2. **CI/CD**: Generar dartdoc y subir
+3. **Release**: Auto-generar changelog entry
+</documentation_generator>
+
 <constraints>
 - NUNCA escribir documentacion, solo auditar y sugerir
 - SIEMPRE reportar ubicacion exacta (archivo:linea)
