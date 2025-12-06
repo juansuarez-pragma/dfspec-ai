@@ -79,14 +79,10 @@ class FileUtils {
       return [];
     }
 
-    return dir
-        .listSync(recursive: recursive)
-        .whereType<File>()
-        .where((file) {
-          if (extension == null) return true;
-          return p.extension(file.path) == extension;
-        })
-        .toList();
+    return dir.listSync(recursive: recursive).whereType<File>().where((file) {
+      if (extension == null) return true;
+      return p.extension(file.path) == extension;
+    }).toList();
   }
 
   /// Obtiene el nombre del directorio actual como nombre de proyecto.

@@ -12,16 +12,14 @@ class GenerationResult {
     required this.filePath,
     required this.type,
     this.overwritten = false,
-  })  : error = null,
-        isSuccess = true;
+  }) : error = null,
+       isSuccess = true;
 
   /// Crea un resultado con error.
-  const GenerationResult.failure({
-    required this.error,
-    required this.type,
-  })  : filePath = null,
-        overwritten = false,
-        isSuccess = false;
+  const GenerationResult.failure({required this.error, required this.type})
+    : filePath = null,
+      overwritten = false,
+      isSuccess = false;
 
   /// Si la generacion fue exitosa.
   final bool isSuccess;
@@ -44,9 +42,7 @@ class GenerationResult {
 /// Crea archivos de especificacion basados en templates.
 class SpecGenerator {
   /// Crea un nuevo generador.
-  const SpecGenerator({
-    this.baseDir = '.',
-  });
+  const SpecGenerator({this.baseDir = '.'});
 
   /// Directorio base para generar archivos.
   final String baseDir;
@@ -90,7 +86,8 @@ class SpecGenerator {
       if (exists && !overwrite) {
         return GenerationResult.failure(
           type: type,
-          error: 'El archivo ya existe: $filePath. '
+          error:
+              'El archivo ya existe: $filePath. '
               'Usa --force para sobrescribir.',
         );
       }

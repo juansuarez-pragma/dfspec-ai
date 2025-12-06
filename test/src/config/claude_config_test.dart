@@ -60,13 +60,22 @@ void main() {
 
       test('getModelForComplexity debe ser case-insensitive', () {
         expect(ClaudeCodeConfig.getModelForComplexity('HIGH'), equals('opus'));
-        expect(ClaudeCodeConfig.getModelForComplexity('Medium'), equals('sonnet'));
+        expect(
+          ClaudeCodeConfig.getModelForComplexity('Medium'),
+          equals('sonnet'),
+        );
         expect(ClaudeCodeConfig.getModelForComplexity('LOW'), equals('haiku'));
       });
 
-      test('getModelForComplexity debe retornar default para valor desconocido', () {
-        expect(ClaudeCodeConfig.getModelForComplexity('unknown'), equals('opus'));
-      });
+      test(
+        'getModelForComplexity debe retornar default para valor desconocido',
+        () {
+          expect(
+            ClaudeCodeConfig.getModelForComplexity('unknown'),
+            equals('opus'),
+          );
+        },
+      );
     });
 
     group('herramientas MCP', () {
@@ -85,7 +94,15 @@ void main() {
       test('coreTools debe contener herramientas basicas', () {
         expect(
           ClaudeCodeConfig.coreTools,
-          containsAll(['Read', 'Write', 'Edit', 'Glob', 'Grep', 'Bash', 'Task']),
+          containsAll([
+            'Read',
+            'Write',
+            'Edit',
+            'Glob',
+            'Grep',
+            'Bash',
+            'Task',
+          ]),
         );
       });
     });

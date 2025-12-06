@@ -219,23 +219,59 @@ name: test
 
     group('mapAgentNameToSlashCommand', () {
       test('debe mapear nombres de agentes a comandos slash', () {
-        expect(parser.mapAgentNameToSlashCommand('dfplanner'), equals('df-plan'));
-        expect(parser.mapAgentNameToSlashCommand('dfimplementer'), equals('df-implement'));
+        expect(
+          parser.mapAgentNameToSlashCommand('dfplanner'),
+          equals('df-plan'),
+        );
+        expect(
+          parser.mapAgentNameToSlashCommand('dfimplementer'),
+          equals('df-implement'),
+        );
         expect(parser.mapAgentNameToSlashCommand('dftest'), equals('df-test'));
-        expect(parser.mapAgentNameToSlashCommand('dfsolid'), equals('df-review'));
-        expect(parser.mapAgentNameToSlashCommand('dfsecurity'), equals('df-security'));
-        expect(parser.mapAgentNameToSlashCommand('dfperformance'), equals('df-performance'));
-        expect(parser.mapAgentNameToSlashCommand('dfdocumentation'), equals('df-docs'));
-        expect(parser.mapAgentNameToSlashCommand('dfcodequality'), equals('df-quality'));
-        expect(parser.mapAgentNameToSlashCommand('dfdependencies'), equals('df-deps'));
-        expect(parser.mapAgentNameToSlashCommand('dforchestrator'), equals('df-orchestrate'));
-        expect(parser.mapAgentNameToSlashCommand('dfverifier'), equals('df-verify'));
+        expect(
+          parser.mapAgentNameToSlashCommand('dfsolid'),
+          equals('df-review'),
+        );
+        expect(
+          parser.mapAgentNameToSlashCommand('dfsecurity'),
+          equals('df-security'),
+        );
+        expect(
+          parser.mapAgentNameToSlashCommand('dfperformance'),
+          equals('df-performance'),
+        );
+        expect(
+          parser.mapAgentNameToSlashCommand('dfdocumentation'),
+          equals('df-docs'),
+        );
+        expect(
+          parser.mapAgentNameToSlashCommand('dfcodequality'),
+          equals('df-quality'),
+        );
+        expect(
+          parser.mapAgentNameToSlashCommand('dfdependencies'),
+          equals('df-deps'),
+        );
+        expect(
+          parser.mapAgentNameToSlashCommand('dforchestrator'),
+          equals('df-orchestrate'),
+        );
+        expect(
+          parser.mapAgentNameToSlashCommand('dfverifier'),
+          equals('df-verify'),
+        );
         expect(parser.mapAgentNameToSlashCommand('dfspec'), equals('df-spec'));
-        expect(parser.mapAgentNameToSlashCommand('dfstatus'), equals('df-status'));
+        expect(
+          parser.mapAgentNameToSlashCommand('dfstatus'),
+          equals('df-status'),
+        );
       });
 
       test('debe manejar nombres desconocidos con prefijo df-', () {
-        expect(parser.mapAgentNameToSlashCommand('dfcustom'), equals('df-custom'));
+        expect(
+          parser.mapAgentNameToSlashCommand('dfcustom'),
+          equals('df-custom'),
+        );
         expect(parser.mapAgentNameToSlashCommand('dfnew'), equals('df-new'));
       });
     });

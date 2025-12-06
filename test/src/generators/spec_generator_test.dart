@@ -54,10 +54,7 @@ void main() {
 
     test('no sobrescribe sin force', () async {
       // Primera generacion
-      await generator.generate(
-        type: SpecType.feature,
-        name: 'Test',
-      );
+      await generator.generate(type: SpecType.feature, name: 'Test');
 
       // Segunda generacion sin force
       final result = await generator.generate(
@@ -71,10 +68,7 @@ void main() {
 
     test('sobrescribe con force', () async {
       // Primera generacion
-      await generator.generate(
-        type: SpecType.feature,
-        name: 'Test',
-      );
+      await generator.generate(type: SpecType.feature, name: 'Test');
 
       // Segunda generacion con force
       final result = await generator.generate(

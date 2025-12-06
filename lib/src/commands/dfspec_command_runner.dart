@@ -14,12 +14,12 @@ import 'package:dfspec/src/commands/install_command.dart';
 class DfspecCommandRunner extends CommandRunner<int> {
   /// Crea una nueva instancia del CommandRunner.
   DfspecCommandRunner()
-      : super(
-          'dfspec',
-          'Spec-Driven Development para Flutter/Dart.\n\n'
-              'Herramienta CLI que implementa desarrollo guiado por '
-              'especificaciones con agentes especializados y TDD estricto.',
-        ) {
+    : super(
+        'dfspec',
+        'Spec-Driven Development para Flutter/Dart.\n\n'
+            'Herramienta CLI que implementa desarrollo guiado por '
+            'especificaciones con agentes especializados y TDD estricto.',
+      ) {
     // Flag global para version
     argParser.addFlag(
       'version',

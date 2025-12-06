@@ -149,11 +149,7 @@ class AgentInvoker {
   }) {
     return agentIds
         .map(
-          (id) => createInvocation(
-            agentId: id,
-            task: task,
-            context: context,
-          ),
+          (id) => createInvocation(agentId: id, task: task, context: context),
         )
         .toList();
   }
@@ -176,14 +172,16 @@ class AgentInvoker {
 
       String taskWithPipeline;
       if (isFirst) {
-        taskWithPipeline = '''
+        taskWithPipeline =
+            '''
 $initialTask
 
 NOTA: Este es el paso ${i + 1} de ${agentIds.length} en el pipeline.
 Tu output será usado por el siguiente agente: ${isLast ? 'N/A (último)' : agentIds[i + 1]}.
 ''';
       } else {
-        taskWithPipeline = '''
+        taskWithPipeline =
+            '''
 Continúa el trabajo del agente anterior en el pipeline.
 
 Tarea original: $initialTask
@@ -213,9 +211,7 @@ ${isLast ? 'Eres el último agente - genera el output final.' : 'Tu output será
   /// Lista todos los agentes disponibles con sus modelos.
   Map<String, String> listAgentsWithModels() {
     final agents = _loader.loadAll();
-    return {
-      for (final agent in agents) agent.id: agent.model ?? defaultModel,
-    };
+    return {for (final agent in agents) agent.id: agent.model ?? defaultModel};
   }
 
   /// Invalida el cache para forzar recarga.
@@ -284,8 +280,7 @@ ${isLast ? 'Eres el último agente - genera el output final.' : 'Tu output será
 
   String _buildDescription(String agentId, String task) {
     // Truncar tarea a ~50 chars para descripción corta
-    final shortTask =
-        task.length > 50 ? '${task.substring(0, 47)}...' : task;
+    final shortTask = task.length > 50 ? '${task.substring(0, 47)}...' : task;
 
     // Mapear agentId a nombre legible
     final agentName = switch (agentId) {

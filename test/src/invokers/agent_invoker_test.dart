@@ -72,9 +72,7 @@ tools:
 Crea y ejecuta tests.
 ''');
 
-      invoker = AgentInvoker(
-        loader: AgentLoader(agentsPath: testAgentsPath),
-      );
+      invoker = AgentInvoker(loader: AgentLoader(agentsPath: testAgentsPath));
     });
 
     tearDown(() async {
@@ -148,10 +146,7 @@ Crea y ejecuta tests.
         final invocation = invoker.createInvocation(
           agentId: 'dfplanner',
           task: 'Diseña arquitectura',
-          context: {
-            'project': 'mi-app',
-            'architecture': 'Clean Architecture',
-          },
+          context: {'project': 'mi-app', 'architecture': 'Clean Architecture'},
         );
 
         expect(invocation.prompt, contains('CONTEXTO'));
@@ -292,9 +287,7 @@ Crea y ejecuta tests.
     setUp(() {
       final projectRoot = Directory.current.path;
       final agentsPath = p.join(projectRoot, 'agents');
-      invoker = AgentInvoker(
-        loader: AgentLoader(agentsPath: agentsPath),
-      );
+      invoker = AgentInvoker(loader: AgentLoader(agentsPath: agentsPath));
     });
 
     test('debe cargar dfplanner real con modelo opus', () {
@@ -320,21 +313,24 @@ Crea y ejecuta tests.
       final agents = invoker.listAgentsWithModels();
 
       expect(agents.length, greaterThanOrEqualTo(13));
-      expect(agents.keys, containsAll([
-        'dfplanner',
-        'dfimplementer',
-        'dftest',
-        'dfsolid',
-        'dfsecurity',
-        'dfperformance',
-        'dfcodequality',
-        'dfdocumentation',
-        'dfdependencies',
-        'dforchestrator',
-        'dfverifier',
-        'dfspec',
-        'dfstatus',
-      ]));
+      expect(
+        agents.keys,
+        containsAll([
+          'dfplanner',
+          'dfimplementer',
+          'dftest',
+          'dfsolid',
+          'dfsecurity',
+          'dfperformance',
+          'dfcodequality',
+          'dfdocumentation',
+          'dfdependencies',
+          'dforchestrator',
+          'dfverifier',
+          'dfspec',
+          'dfstatus',
+        ]),
+      );
     });
 
     test('todos los agentes excepto dfstatus usan opus', () {
@@ -342,11 +338,17 @@ Crea y ejecuta tests.
 
       for (final entry in agents.entries) {
         if (entry.key == 'dfstatus') {
-          expect(entry.value, equals('haiku'),
-              reason: 'dfstatus debe usar haiku');
+          expect(
+            entry.value,
+            equals('haiku'),
+            reason: 'dfstatus debe usar haiku',
+          );
         } else {
-          expect(entry.value, equals('opus'),
-              reason: '${entry.key} debe usar opus');
+          expect(
+            entry.value,
+            equals('opus'),
+            reason: '${entry.key} debe usar opus',
+          );
         }
       }
     });

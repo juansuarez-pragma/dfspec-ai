@@ -175,21 +175,24 @@ tools:
       expect(agents.length, greaterThanOrEqualTo(13));
 
       final agentIds = agents.map((a) => a.id).toList();
-      expect(agentIds, containsAll([
-        'dfplanner',
-        'dfimplementer',
-        'dftest',
-        'dfsolid',
-        'dfsecurity',
-        'dfperformance',
-        'dfdocumentation',
-        'dfcodequality',
-        'dfdependencies',
-        'dforchestrator',
-        'dfverifier',
-        'dfspec',
-        'dfstatus',
-      ]));
+      expect(
+        agentIds,
+        containsAll([
+          'dfplanner',
+          'dfimplementer',
+          'dftest',
+          'dfsolid',
+          'dfsecurity',
+          'dfperformance',
+          'dfdocumentation',
+          'dfcodequality',
+          'dfdependencies',
+          'dforchestrator',
+          'dfverifier',
+          'dfspec',
+          'dfstatus',
+        ]),
+      );
     });
   });
 }

@@ -9,7 +9,10 @@ void main() {
 
     test('fromString retorna tipo correcto', () {
       expect(SpecType.fromString('feature'), equals(SpecType.feature));
-      expect(SpecType.fromString('architecture'), equals(SpecType.architecture));
+      expect(
+        SpecType.fromString('architecture'),
+        equals(SpecType.architecture),
+      );
       expect(SpecType.fromString('security'), equals(SpecType.security));
       expect(SpecType.fromString('performance'), equals(SpecType.performance));
       expect(SpecType.fromString('api'), equals(SpecType.api));

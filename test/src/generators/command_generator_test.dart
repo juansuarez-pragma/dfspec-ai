@@ -73,7 +73,10 @@ void main() {
       final output = generator.generate(template);
 
       expect(output, contains('---'));
-      expect(output, contains('description: Crea especificaciones de features'));
+      expect(
+        output,
+        contains('description: Crea especificaciones de features'),
+      );
       expect(output, contains('allowed-tools: Read, Write, Glob'));
       expect(output, contains('# Comando df-spec'));
       expect(output, contains('Contenido del prompt.'));

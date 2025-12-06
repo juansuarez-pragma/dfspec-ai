@@ -32,9 +32,7 @@ void main() {
     });
 
     test('usa valores por defecto para campos faltantes en YAML', () {
-      final yaml = <dynamic, dynamic>{
-        'project_name': 'proyecto',
-      };
+      final yaml = <dynamic, dynamic>{'project_name': 'proyecto'};
 
       final config = DfspecConfig.fromYaml(yaml);
 

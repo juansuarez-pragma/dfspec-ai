@@ -21,10 +21,7 @@ class DfspecConfig {
 
   /// Crea una configuracion por defecto para un proyecto.
   factory DfspecConfig.defaults(String projectName) {
-    return DfspecConfig(
-      projectName: projectName,
-      agents: defaultAgents,
-    );
+    return DfspecConfig(projectName: projectName, agents: defaultAgents);
   }
 
   /// Crea una configuracion desde un mapa YAML.

@@ -17,7 +17,7 @@ import 'package:dfspec/src/utils/utils.dart';
 class AgentsCommand extends Command<int> {
   /// Crea una nueva instancia del comando agents.
   AgentsCommand({AgentLoader? agentLoader})
-      : _agentLoader = agentLoader ?? AgentLoader() {
+    : _agentLoader = agentLoader ?? AgentLoader() {
     argParser
       ..addOption(
         'info',
@@ -34,11 +34,7 @@ class AgentsCommand extends Command<int> {
         'capability',
         help: 'Busca agentes con una capacidad especifica.',
       )
-      ..addFlag(
-        'json',
-        help: 'Salida en formato JSON.',
-        negatable: false,
-      );
+      ..addFlag('json', help: 'Salida en formato JSON.', negatable: false);
   }
 
   final AgentLoader _agentLoader;
@@ -82,9 +78,7 @@ class AgentsCommand extends Command<int> {
     }
 
     if (capabilityFilter != null) {
-      agents = agents
-          .where((a) => a.hasCapability(capabilityFilter))
-          .toList();
+      agents = agents.where((a) => a.hasCapability(capabilityFilter)).toList();
     }
 
     if (jsonOutput) {
@@ -98,8 +92,9 @@ class AgentsCommand extends Command<int> {
     final agent = _registry.getAgent(agentId);
 
     if (agent == null) {
-      _logger..error('Agente no encontrado: $agentId')
-      ..info('Usa "dfspec agents" para ver agentes disponibles.');
+      _logger
+        ..error('Agente no encontrado: $agentId')
+        ..info('Usa "dfspec agents" para ver agentes disponibles.');
       return 1;
     }
 
@@ -108,39 +103,42 @@ class AgentsCommand extends Command<int> {
       return 0;
     }
 
-    _logger..title(agent.name)
-    ..write('ID: ${agent.id}')
-    ..write('Categoria: ${agent.category.displayName}')
-    ..write('Comando: /${agent.slashCommand}')
-    ..blank()
-    ..write(agent.description)
-    ..blank()
-
-    ..write('Capacidades:');
+    _logger
+      ..title(agent.name)
+      ..write('ID: ${agent.id}')
+      ..write('Categoria: ${agent.category.displayName}')
+      ..write('Comando: /${agent.slashCommand}')
+      ..blank()
+      ..write(agent.description)
+      ..blank()
+      ..write('Capacidades:');
     for (final cap in agent.capabilities) {
       _logger.item(cap);
     }
 
     if (agent.dependsOn.isNotEmpty) {
-      _logger..blank()
-      ..write('Depende de:');
+      _logger
+        ..blank()
+        ..write('Depende de:');
       for (final dep in agent.dependsOn) {
         _logger.item(dep);
       }
     }
 
     if (agent.tools.isNotEmpty) {
-      _logger..blank()
-      ..write('Herramientas:')
-      ..write('  ${agent.tools.join(', ')}');
+      _logger
+        ..blank()
+        ..write('Herramientas:')
+        ..write('  ${agent.tools.join(', ')}');
     }
 
     return 0;
   }
 
   int _showAgentsList(List<AgentConfig> agents) {
-    _logger..title('Agentes DFSpec Disponibles')
-    ..write('${agents.length} agentes especializados\n');
+    _logger
+      ..title('Agentes DFSpec Disponibles')
+      ..write('${agents.length} agentes especializados\n');
 
     // Agrupar por categoria
     for (final category in AgentCategory.values) {
@@ -153,13 +151,15 @@ class AgentsCommand extends Command<int> {
       _logger.write('\n${category.displayName}:');
 
       for (final agent in categoryAgents) {
-        _logger..write('  ${agent.id.padRight(18)} /${agent.slashCommand}')
-        ..write('    ${_truncate(agent.description, 60)}');
+        _logger
+          ..write('  ${agent.id.padRight(18)} /${agent.slashCommand}')
+          ..write('    ${_truncate(agent.description, 60)}');
       }
     }
 
-    _logger..blank()
-    ..info('Usa --info=<agente> para ver detalles.');
+    _logger
+      ..blank()
+      ..info('Usa --info=<agente> para ver detalles.');
 
     return 0;
   }

@@ -9,12 +9,9 @@ class Logger {
   /// [verbose] - Si es true, muestra mensajes de debug.
   /// [output] - Stream de salida para mensajes normales (default: stdout).
   /// [errorOutput] - Stream de salida para errores (default: stderr).
-  const Logger({
-    this.verbose = false,
-    IOSink? output,
-    IOSink? errorOutput,
-  })  : _output = output,
-        _errorOutput = errorOutput;
+  const Logger({this.verbose = false, IOSink? output, IOSink? errorOutput})
+    : _output = output,
+      _errorOutput = errorOutput;
 
   /// Si es true, muestra mensajes de debug.
   final bool verbose;

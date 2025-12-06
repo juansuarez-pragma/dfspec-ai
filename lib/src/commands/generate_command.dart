@@ -30,11 +30,7 @@ class GenerateCommand extends Command<int> {
         abbr: 'o',
         help: 'Directorio de salida personalizado.',
       )
-      ..addOption(
-        'author',
-        abbr: 'a',
-        help: 'Autor de la especificacion.',
-      )
+      ..addOption('author', abbr: 'a', help: 'Autor de la especificacion.')
       ..addFlag(
         'force',
         abbr: 'f',
@@ -56,7 +52,8 @@ class GenerateCommand extends Command<int> {
   List<String> get aliases => ['gen', 'g'];
 
   @override
-  String get description => 'Genera archivos de especificacion desde templates.';
+  String get description =>
+      'Genera archivos de especificacion desde templates.';
 
   @override
   String get invocation => 'dfspec generate [tipo] <nombre>';
@@ -84,9 +81,10 @@ class GenerateCommand extends Command<int> {
 
     // El nombre puede venir como argumento posicional o como parte de rest
     if (argResults!.rest.isEmpty) {
-      _logger..error('Debe proporcionar un nombre para la especificacion.')
-      ..info('Uso: dfspec generate [tipo] <nombre>')
-      ..info('Ejemplo: dfspec generate feature "Autenticacion OAuth"');
+      _logger
+        ..error('Debe proporcionar un nombre para la especificacion.')
+        ..info('Uso: dfspec generate [tipo] <nombre>')
+        ..info('Ejemplo: dfspec generate feature "Autenticacion OAuth"');
       return 1;
     }
 
@@ -111,14 +109,16 @@ class GenerateCommand extends Command<int> {
     }
 
     if (type == null) {
-      _logger..error('Tipo de especificacion invalido: $typeArg')
-      ..info('Usa --list para ver los tipos disponibles.');
+      _logger
+        ..error('Tipo de especificacion invalido: $typeArg')
+        ..info('Usa --list para ver los tipos disponibles.');
       return 1;
     }
 
-    _logger..title('Generando especificacion')
-    ..info('Tipo: ${type.description}')
-    ..info('Nombre: $name');
+    _logger
+      ..title('Generando especificacion')
+      ..info('Tipo: ${type.description}')
+      ..info('Nombre: $name');
 
     // Preparar variables
     final variables = <String, String>{};
@@ -148,10 +148,11 @@ class GenerateCommand extends Command<int> {
       _logger.success('Archivo creado: ${result.filePath}');
     }
 
-    _logger..blank()
-    ..info('Proximos pasos:')
-    ..item('Edita el archivo con los detalles de tu especificacion')
-    ..item('Usa /df-spec en Claude Code para completar la especificacion');
+    _logger
+      ..blank()
+      ..info('Proximos pasos:')
+      ..item('Edita el archivo con los detalles de tu especificacion')
+      ..item('Usa /df-spec en Claude Code para completar la especificacion');
 
     return 0;
   }

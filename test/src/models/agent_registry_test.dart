@@ -68,9 +68,7 @@ tools:
 # Agente dfdocumentation
 ''');
 
-      registry = AgentRegistry(
-        loader: AgentLoader(agentsPath: testAgentsPath),
-      );
+      registry = AgentRegistry(loader: AgentLoader(agentsPath: testAgentsPath));
     });
 
     tearDown(() async {

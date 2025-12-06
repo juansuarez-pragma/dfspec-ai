@@ -201,9 +201,7 @@ class AgentParser {
 
     final name = yaml['name'] as String?;
     if (name == null || name.isEmpty) {
-      throw const AgentParseException(
-        'El frontmatter debe contener "name"',
-      );
+      throw const AgentParseException('El frontmatter debe contener "name"');
     }
 
     final description = _parseDescription(yaml['description']);

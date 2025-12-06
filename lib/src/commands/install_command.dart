@@ -24,7 +24,7 @@ import 'package:path/path.dart' as p;
 class InstallCommand extends Command<int> {
   /// Crea una nueva instancia del comando install.
   InstallCommand({AgentLoader? agentLoader})
-      : _agentLoader = agentLoader ?? AgentLoader() {
+    : _agentLoader = agentLoader ?? AgentLoader() {
     argParser
       ..addFlag(
         'all',
@@ -57,7 +57,8 @@ class InstallCommand extends Command<int> {
   String get name => 'install';
 
   @override
-  String get description => 'Instala comandos slash de DFSpec para Claude Code.';
+  String get description =>
+      'Instala comandos slash de DFSpec para Claude Code.';
 
   @override
   String get invocation => 'dfspec install [--all] [--command=nombre]';
@@ -84,9 +85,7 @@ class InstallCommand extends Command<int> {
     // Cargar agentes desde archivos
     final agentDefinitions = _agentLoader.loadAll();
     if (agentDefinitions.isEmpty) {
-      _logger.error(
-        'No se encontraron agentes en ${_agentLoader.agentsPath}',
-      );
+      _logger.error('No se encontraron agentes en ${_agentLoader.agentsPath}');
       return 1;
     }
 
@@ -134,9 +133,7 @@ class InstallCommand extends Command<int> {
       toInstall = commands;
     } else {
       // Instalar comandos esenciales por defecto
-      toInstall = _essentialCommands
-          .where(commandToAgent.containsKey)
-          .toList();
+      toInstall = _essentialCommands.where(commandToAgent.containsKey).toList();
     }
 
     _logger.title('Instalando comandos slash para Claude Code');

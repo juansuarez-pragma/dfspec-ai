@@ -20,9 +20,11 @@ class DfspecException implements Exception {
 class ConfigNotFoundException extends DfspecException {
   /// Crea excepcion de configuracion no encontrada.
   const ConfigNotFoundException([String? path])
-      : super(path != null
+    : super(
+        path != null
             ? 'dfspec.yaml no encontrado en: $path'
-            : 'dfspec.yaml no encontrado');
+            : 'dfspec.yaml no encontrado',
+      );
 }
 
 /// Error cuando la configuracion es invalida.
@@ -43,7 +45,7 @@ class InvalidConfigException extends DfspecException {
 class TemplateNotFoundException extends DfspecException {
   /// Crea excepcion de template no encontrado.
   const TemplateNotFoundException(String templateName)
-      : super('Template no encontrado: $templateName');
+    : super('Template no encontrado: $templateName');
 }
 
 /// Error de operacion de archivo.
@@ -74,19 +76,19 @@ class FileOperationException extends DfspecException {
 class InvalidSpecTypeException extends DfspecException {
   /// Crea excepcion de tipo de spec invalido.
   const InvalidSpecTypeException(String type)
-      : super('Tipo de especificacion invalido: $type');
+    : super('Tipo de especificacion invalido: $type');
 }
 
 /// Error cuando un agente no existe.
 class AgentNotFoundException extends DfspecException {
   /// Crea excepcion de agente no encontrado.
   const AgentNotFoundException(String agentId)
-      : super('Agente no encontrado: $agentId');
+    : super('Agente no encontrado: $agentId');
 }
 
 /// Error cuando un comando slash no existe.
 class CommandNotFoundException extends DfspecException {
   /// Crea excepcion de comando no encontrado.
   const CommandNotFoundException(String command)
-      : super('Comando slash no encontrado: $command');
+    : super('Comando slash no encontrado: $command');
 }

@@ -24,13 +24,13 @@ class ArtifactTemplates {
 
   /// Lista todos los templates disponibles.
   static List<SpecTemplate> get all => [
-        _featureTemplate,
-        _architectureTemplate,
-        _securityTemplate,
-        _performanceTemplate,
-        _apiTemplate,
-        _planTemplate,
-      ];
+    _featureTemplate,
+    _architectureTemplate,
+    _securityTemplate,
+    _performanceTemplate,
+    _apiTemplate,
+    _planTemplate,
+  ];
 
   static const _featureTemplate = SpecTemplate(
     type: SpecType.feature,
@@ -81,22 +81,14 @@ class ArtifactTemplates {
   static const _apiTemplate = SpecTemplate(
     type: SpecType.api,
     name: 'API Contract',
-    variables: {
-      'title': 'Nombre de la API',
-      'version': '1.0.0',
-      'date': '',
-    },
+    variables: {'title': 'Nombre de la API', 'version': '1.0.0', 'date': ''},
     content: _apiContent,
   );
 
   static const _planTemplate = SpecTemplate(
     type: SpecType.plan,
     name: 'Implementation Plan',
-    variables: {
-      'title': 'Nombre de la Feature',
-      'spec_ref': '',
-      'date': '',
-    },
+    variables: {'title': 'Nombre de la Feature', 'spec_ref': '', 'date': ''},
     content: _planContent,
   );
 

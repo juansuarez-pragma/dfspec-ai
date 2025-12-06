@@ -12,8 +12,8 @@ class AgentLoader {
   /// Si no se especifica [agentsPath], usa el directorio `agents/`
   /// relativo al directorio actual.
   AgentLoader({String? agentsPath})
-      : _agentsPath = agentsPath ?? p.join(Directory.current.path, 'agents'),
-        _parser = AgentParser();
+    : _agentsPath = agentsPath ?? p.join(Directory.current.path, 'agents'),
+      _parser = AgentParser();
 
   final String _agentsPath;
   final AgentParser _parser;
