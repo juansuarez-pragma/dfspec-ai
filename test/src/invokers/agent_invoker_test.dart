@@ -332,15 +332,27 @@ Crea y ejecuta tests.
       );
     });
 
-    test('todos los agentes excepto dfstatus usan opus', () {
+    test('agentes usan modelos correctos segun su complejidad', () {
       final agents = invoker.listAgentsWithModels();
 
+      // Agentes que usan haiku (tareas simples)
+      const haikuAgents = ['dfstatus'];
+      // Agentes que usan sonnet (tareas intermedias)
+      const sonnetAgents = ['dfclarifier', 'dfchecklist'];
+      // El resto usa opus (tareas complejas)
+
       for (final entry in agents.entries) {
-        if (entry.key == 'dfstatus') {
+        if (haikuAgents.contains(entry.key)) {
           expect(
             entry.value,
             equals('haiku'),
-            reason: 'dfstatus debe usar haiku',
+            reason: '${entry.key} debe usar haiku',
+          );
+        } else if (sonnetAgents.contains(entry.key)) {
+          expect(
+            entry.value,
+            equals('sonnet'),
+            reason: '${entry.key} debe usar sonnet',
           );
         } else {
           expect(
