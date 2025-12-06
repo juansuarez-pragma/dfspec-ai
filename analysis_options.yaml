@@ -1,0 +1,19 @@
+include: package:very_good_analysis/analysis_options.yaml
+
+analyzer:
+  exclude:
+    - "**/*.g.dart"
+    - "**/*.freezed.dart"
+    - "build/**"
+    - ".dart_tool/**"
+
+linter:
+  rules:
+    # Ajustes para CLI (no necesita docs publicos en todo)
+    public_member_api_docs: false
+    # Permitir prints en CLI
+    avoid_print: false
+    # Otros ajustes
+    lines_longer_than_80_chars: false
+    prefer_single_quotes: true
+    sort_constructors_first: true
