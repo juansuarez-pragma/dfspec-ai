@@ -105,7 +105,7 @@ jobs:
       - name: Test CLI
         run: |
           ./dfspec --help
-          ./dfspec agents --list
+          ./dfspec agents
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
