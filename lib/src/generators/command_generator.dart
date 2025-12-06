@@ -1,8 +1,11 @@
-import 'package:dfspec/src/models/ai_platform_config.dart';
+import 'package:dfspec/src/config/claude_config.dart';
 import 'package:dfspec/src/parsers/agent_parser.dart';
 import 'package:meta/meta.dart';
 
 /// Template de un comando slash con su contenido.
+///
+/// Representa la informacion necesaria para generar un archivo
+/// de comando slash para Claude Code.
 @immutable
 class CommandTemplate {
   /// Crea un nuevo template de comando.
@@ -36,71 +39,51 @@ class CommandTemplate {
   final String content;
 }
 
-/// Generador de comandos para diferentes formatos.
+/// Generador de comandos slash para Claude Code.
 ///
-/// Implementa el patron Strategy para generar comandos
-/// en diferentes formatos segun la plataforma de IA.
-abstract class CommandGenerator {
+/// Genera archivos Markdown con YAML frontmatter compatibles
+/// con el formato de comandos de Claude Code CLI.
+///
+/// Formato generado:
+/// ```markdown
+/// ---
+/// description: Descripcion del comando
+/// allowed-tools: Read, Write, Glob
+/// ---
+///
+/// [Contenido del comando]
+/// ```
+///
+/// Ejemplo:
+/// ```dart
+/// final generator = ClaudeCommandGenerator();
+/// final template = CommandTemplate(
+///   name: 'df-plan',
+///   description: 'Genera plan de implementacion',
+///   tools: ['Read', 'Glob', 'WebSearch'],
+///   content: '# Agente dfplanner\n...',
+/// );
+/// final content = generator.generate(template);
+/// ```
+class ClaudeCommandGenerator {
+  /// Crea una instancia del generador.
+  const ClaudeCommandGenerator();
 
-  /// Factory que retorna el generador apropiado para una plataforma.
-  factory CommandGenerator.forPlatform(AiPlatformConfig platform) {
-    return switch (platform.commandFormat) {
-      CommandFormat.markdown => MarkdownCommandGenerator(),
-      CommandFormat.toml => TomlCommandGenerator(),
-    };
-  }
   /// Genera el contenido del archivo de comando.
-  String generate(CommandTemplate template);
-}
-
-/// Generador de comandos en formato Markdown.
-///
-/// Usado por: Claude Code, Cursor, GitHub Copilot, etc.
-class MarkdownCommandGenerator implements CommandGenerator {
-  @override
+  ///
+  /// [template] contiene la informacion del comando a generar.
+  /// Retorna el contenido Markdown con frontmatter YAML.
   String generate(CommandTemplate template) {
+    final frontmatter = ClaudeCodeConfig.generateFrontmatter(
+      description: template.description,
+      tools: template.tools,
+    );
+
     final buffer = StringBuffer()
-      // Frontmatter YAML
-      ..writeln('---')
-      ..writeln('description: ${template.description}')
-      ..writeln('allowed-tools: ${template.tools.join(', ')}')
-      ..writeln('---')
+      ..write(frontmatter)
       ..writeln()
-      // Contenido del comando
       ..write(template.content);
 
     return buffer.toString();
-  }
-}
-
-/// Generador de comandos en formato TOML.
-///
-/// Usado por: Gemini CLI, Qwen Code.
-class TomlCommandGenerator implements CommandGenerator {
-  @override
-  String generate(CommandTemplate template) {
-    final buffer = StringBuffer()
-      // Seccion [command]
-      ..writeln('[command]')
-      ..writeln('name = "${template.name}"')
-      ..writeln('description = "${_escapeTomlString(template.description)}"')
-      ..writeln('tools = [${_formatToolsArray(template.tools)}]')
-      ..writeln()
-      // Seccion [prompt]
-      ..writeln('[prompt]')
-      ..writeln('content = """')
-      ..writeln(template.content)
-      ..writeln('"""');
-
-    return buffer.toString();
-  }
-
-  String _escapeTomlString(String value) {
-    return value.replaceAll('"', r'\"');
-  }
-
-  String _formatToolsArray(List<String> tools) {
-    if (tools.isEmpty) return '';
-    return tools.map((t) => '"$t"').join(', ');
   }
 }

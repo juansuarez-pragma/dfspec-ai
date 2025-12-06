@@ -1,5 +1,4 @@
 import 'package:dfspec/src/generators/command_generator.dart';
-import 'package:dfspec/src/models/ai_platform_config.dart';
 import 'package:dfspec/src/parsers/agent_parser.dart';
 import 'package:test/test.dart';
 
@@ -35,7 +34,10 @@ void main() {
       expect(template.name, equals('df-plan'));
       expect(template.description, equals('Arquitecto de soluciones'));
       expect(template.tools, equals(['Read', 'Glob', 'Grep']));
-      expect(template.content, equals('# Agente dfplanner\n\nContenido completo.'));
+      expect(
+        template.content,
+        equals('# Agente dfplanner\n\nContenido completo.'),
+      );
     });
 
     test('fromAgent debe manejar agente sin tools', () {
@@ -53,39 +55,11 @@ void main() {
     });
   });
 
-  group('CommandGenerator', () {
-    group('forPlatform factory', () {
-      test('debe retornar MarkdownCommandGenerator para formato markdown', () {
-        const config = AiPlatformConfig(
-          id: 'claude',
-          name: 'Claude Code',
-          commandFolder: '.claude/commands/',
-          commandFormat: CommandFormat.markdown,
-        );
-
-        final generator = CommandGenerator.forPlatform(config);
-        expect(generator, isA<MarkdownCommandGenerator>());
-      });
-
-      test('debe retornar TomlCommandGenerator para formato toml', () {
-        const config = AiPlatformConfig(
-          id: 'gemini',
-          name: 'Gemini CLI',
-          commandFolder: '.gemini/commands/',
-          commandFormat: CommandFormat.toml,
-        );
-
-        final generator = CommandGenerator.forPlatform(config);
-        expect(generator, isA<TomlCommandGenerator>());
-      });
-    });
-  });
-
-  group('MarkdownCommandGenerator', () {
-    late MarkdownCommandGenerator generator;
+  group('ClaudeCommandGenerator', () {
+    late ClaudeCommandGenerator generator;
 
     setUp(() {
-      generator = MarkdownCommandGenerator();
+      generator = const ClaudeCommandGenerator();
     });
 
     test('debe generar formato markdown con frontmatter', () {
@@ -135,77 +109,52 @@ Linea 3''',
       expect(output, contains('Linea 2'));
       expect(output, contains('Linea 3'));
     });
-  });
 
-  group('TomlCommandGenerator', () {
-    late TomlCommandGenerator generator;
-
-    setUp(() {
-      generator = TomlCommandGenerator();
-    });
-
-    test('debe generar formato TOML valido', () {
+    test('debe generar frontmatter YAML valido', () {
       const template = CommandTemplate(
-        name: 'df-spec',
-        description: 'Crea especificaciones de features',
-        tools: ['Read', 'Write', 'Glob'],
-        content: 'Contenido del prompt.',
+        name: 'df-plan',
+        description: 'Genera plan de implementacion',
+        tools: ['Read', 'Glob', 'WebSearch'],
+        content: '# Agente dfplanner',
       );
 
       final output = generator.generate(template);
 
-      expect(output, contains('[command]'));
-      expect(output, contains('name = "df-spec"'));
-      expect(output, contains('description = "Crea especificaciones de features"'));
-      expect(output, contains('tools = ["Read", "Write", "Glob"]'));
-      expect(output, contains('[prompt]'));
-      expect(output, contains('content = """'));
-      expect(output, contains('Contenido del prompt.'));
-      expect(output, contains('"""'));
+      // Verificar estructura del frontmatter
+      expect(output, startsWith('---\n'));
+      expect(output.indexOf('---'), equals(0));
+      // Segundo --- debe existir despues del primero
+      expect(output.indexOf('---', 4), greaterThan(0));
     });
 
-    test('debe escapar comillas en descripcion', () {
+    test('debe separar frontmatter del contenido con linea vacia', () {
       const template = CommandTemplate(
         name: 'test',
-        description: 'Descripcion con "comillas"',
+        description: 'Test',
+        tools: ['Read'],
+        content: 'Contenido',
+      );
+
+      final output = generator.generate(template);
+
+      // El frontmatter termina con --- y luego hay una linea vacia
+      expect(output, contains('---\n\n'));
+    });
+
+    test('debe manejar descripcion con caracteres especiales', () {
+      const template = CommandTemplate(
+        name: 'test',
+        description: 'Descripcion: con dos puntos y "comillas"',
         tools: [],
         content: 'Contenido',
       );
 
       final output = generator.generate(template);
 
-      expect(output, contains(r'description = "Descripcion con \"comillas\""'));
-    });
-
-    test('debe manejar contenido multilinea', () {
-      const template = CommandTemplate(
-        name: 'test',
-        description: 'Test',
-        tools: [],
-        content: '''
-Linea 1
-Linea 2
-Linea 3''',
+      expect(
+        output,
+        contains('description: Descripcion: con dos puntos y "comillas"'),
       );
-
-      final output = generator.generate(template);
-
-      expect(output, contains('"""'));
-      expect(output, contains('Linea 1'));
-      expect(output, contains('Linea 2'));
-    });
-
-    test('debe generar array vacio para tools vacios', () {
-      const template = CommandTemplate(
-        name: 'test',
-        description: 'Test',
-        tools: [],
-        content: 'Contenido',
-      );
-
-      final output = generator.generate(template);
-
-      expect(output, contains('tools = []'));
     });
   });
 }

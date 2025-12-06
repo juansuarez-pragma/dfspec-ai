@@ -1,20 +1,20 @@
 import 'dart:io';
 
 import 'package:args/command_runner.dart';
+import 'package:dfspec/src/config/claude_config.dart';
 import 'package:dfspec/src/models/models.dart';
 import 'package:dfspec/src/utils/utils.dart';
 
 /// Comando para inicializar un proyecto con estructura DFSpec.
 ///
 /// Crea la estructura de directorios y archivos necesarios
-/// para trabajar con Spec-Driven Development en multiples
-/// plataformas de IA.
+/// para trabajar con Spec-Driven Development usando Claude Code.
 ///
 /// Uso:
 /// ```bash
 /// dfspec init [nombre_proyecto]
-/// dfspec init --agent claude --agent gemini
-/// dfspec init --all-agents
+/// dfspec init --force          # Sobrescribe existente
+/// dfspec init --minimal        # Solo estructura minima
 /// ```
 class InitCommand extends Command<int> {
   /// Crea una nueva instancia del comando init.
@@ -32,21 +32,9 @@ class InitCommand extends Command<int> {
         help: 'Crea solo la estructura minima.',
         negatable: false,
       )
-      // Opciones multi-agente
-      ..addMultiOption(
-        'agent',
-        help: 'Plataforma(s) de IA a configurar. '
-            'Opciones: ${AiPlatformRegistry.allIds.join(", ")}',
-        allowed: AiPlatformRegistry.allIds,
-      )
-      ..addFlag(
-        'all-agents',
-        help: 'Configura todas las plataformas soportadas.',
-        negatable: false,
-      )
       ..addFlag(
         'with-context',
-        help: 'Genera archivos de contexto (CLAUDE.md, GEMINI.md, etc.).',
+        help: 'Genera archivo CLAUDE.md con instrucciones.',
         defaultsTo: true,
       );
   }
@@ -56,10 +44,10 @@ class InitCommand extends Command<int> {
 
   @override
   String get description =>
-      'Inicializa un proyecto con estructura DFSpec para Spec-Driven Development.';
+      'Inicializa un proyecto con estructura DFSpec para Claude Code.';
 
   @override
-  String get invocation => 'dfspec init [nombre_proyecto] [--agent=claude]';
+  String get invocation => 'dfspec init [nombre_proyecto]';
 
   final Logger _logger = const Logger();
 
@@ -67,8 +55,6 @@ class InitCommand extends Command<int> {
   Future<int> run() async {
     final force = argResults!['force'] as bool;
     final minimal = argResults!['minimal'] as bool;
-    final agents = argResults!['agent'] as List<String>;
-    final allAgents = argResults!['all-agents'] as bool;
     final withContext = argResults!['with-context'] as bool;
 
     // Obtener nombre del proyecto
@@ -89,45 +75,32 @@ class InitCommand extends Command<int> {
         return 1;
       }
 
-      // Determinar plataformas destino
-      final targetPlatforms = _resolveTargetPlatforms(
-        agents: agents,
-        allAgents: allAgents,
-      );
-
       // Crear estructura de directorios
-      await _createDirectoryStructure(
-        minimal: minimal,
-        platforms: targetPlatforms,
-      );
+      await _createDirectoryStructure(minimal: minimal);
 
       // Crear archivo de configuracion
-      await _createConfigFile(projectName, targetPlatforms);
+      await _createConfigFile(projectName);
 
       // Crear archivos base
       await _createBaseFiles(minimal: minimal);
 
-      // Crear archivos de contexto
+      // Crear archivo CLAUDE.md
       if (withContext) {
-        await _createContextFiles(targetPlatforms);
+        await _createClaudeContext();
       }
 
       _logger
         ..blank()
         ..success('Proyecto inicializado correctamente!')
         ..blank()
-        ..info('Plataformas configuradas:');
-
-      for (final platform in targetPlatforms) {
-        _logger.item('${platform.name} (${platform.commandFolder})');
-      }
-
-      _logger
+        ..info('Configurado para Claude Code:')
+        ..item('Comandos: ${ClaudeCodeConfig.commandFolder}')
+        ..item('Contexto: ${ClaudeCodeConfig.contextFile}')
         ..blank()
         ..info('Proximos pasos:')
         ..item('Ejecuta: dfspec install')
         ..item('Crea tu primera especificacion en specs/')
-        ..item('Usa /df-spec en tu agente de IA para comenzar');
+        ..item('Usa /df-spec en Claude Code para comenzar');
 
       return 0;
     } catch (e) {
@@ -136,38 +109,14 @@ class InitCommand extends Command<int> {
     }
   }
 
-  /// Resuelve las plataformas destino basado en los argumentos.
-  List<AiPlatformConfig> _resolveTargetPlatforms({
-    required List<String> agents,
-    required bool allAgents,
-  }) {
-    if (allAgents) {
-      return AiPlatformRegistry.all;
-    }
-
-    if (agents.isNotEmpty) {
-      return agents.map((id) => AiPlatformRegistry.getPlatform(id)!).toList();
-    }
-
-    // Default: solo Claude
-    return [AiPlatformRegistry.defaultPlatform];
-  }
-
-  Future<void> _createDirectoryStructure({
-    required bool minimal,
-    required List<AiPlatformConfig> platforms,
-  }) async {
+  Future<void> _createDirectoryStructure({required bool minimal}) async {
     _logger.info('Creando estructura de directorios...');
 
     final directories = [
       'specs',
       'specs/features',
+      ClaudeCodeConfig.commandFolder,
     ];
-
-    // Agregar carpetas de comandos para cada plataforma
-    for (final platform in platforms) {
-      directories.add(platform.commandFolder);
-    }
 
     if (!minimal) {
       directories.addAll([
@@ -188,56 +137,40 @@ class InitCommand extends Command<int> {
     }
   }
 
-  Future<void> _createConfigFile(
-    String projectName,
-    List<AiPlatformConfig> platforms,
-  ) async {
+  Future<void> _createConfigFile(String projectName) async {
     _logger.info('Creando archivo de configuracion...');
 
-    final config = DfspecConfig.defaults(projectName);
     final configPath = FileUtils.resolvePath('dfspec.yaml');
-
-    // Agregar plataformas al config
-    final configContent = _generateConfigWithPlatforms(config, platforms);
+    final configContent = _generateConfig(projectName);
     await FileUtils.writeFile(configPath, configContent, overwrite: true);
     _logger.item('dfspec.yaml', prefix: '  +');
   }
 
-  String _generateConfigWithPlatforms(
-    DfspecConfig config,
-    List<AiPlatformConfig> platforms,
-  ) {
-    final buffer = StringBuffer()
-      ..writeln('# DFSpec Configuration')
-      ..writeln('# Generado automaticamente')
-      ..writeln()
-      ..writeln('project:')
-      ..writeln('  name: ${config.projectName}')
-      ..writeln('  configured: true')
-      ..writeln()
-      ..writeln('# Plataformas de IA configuradas')
-      ..writeln('platforms:');
+  String _generateConfig(String projectName) {
+    return '''
+# DFSpec Configuration
+# Generado automaticamente
 
-    for (final platform in platforms) {
-      buffer
-        ..writeln('  - id: ${platform.id}')
-        ..writeln('    name: ${platform.name}')
-        ..writeln('    commandFolder: ${platform.commandFolder}');
-    }
+project:
+  name: $projectName
+  configured: true
 
-    buffer
-      ..writeln()
-      ..writeln('# Features del proyecto')
-      ..writeln('features: {}')
-      ..writeln()
-      ..writeln('# Umbrales de calidad')
-      ..writeln('quality:')
-      ..writeln('  testCoverage: 85')
-      ..writeln('  cyclomaticComplexity: 10')
-      ..writeln('  cognitiveComplexity: 8')
-      ..writeln('  maxLinesPerFile: 400');
+# Configuracion de Claude Code
+claude:
+  commandFolder: ${ClaudeCodeConfig.commandFolder}
+  contextFile: ${ClaudeCodeConfig.contextFile}
+  defaultModel: ${ClaudeCodeConfig.defaultModel}
 
-    return buffer.toString();
+# Features del proyecto
+features: {}
+
+# Umbrales de calidad
+quality:
+  testCoverage: 85
+  cyclomaticComplexity: 10
+  cognitiveComplexity: 8
+  maxLinesPerFile: 400
+''';
   }
 
   Future<void> _createBaseFiles({required bool minimal}) async {
@@ -266,24 +199,18 @@ class InitCommand extends Command<int> {
     }
   }
 
-  Future<void> _createContextFiles(List<AiPlatformConfig> platforms) async {
-    _logger.info('Creando archivos de contexto...');
+  Future<void> _createClaudeContext() async {
+    _logger.info('Creando archivo de contexto CLAUDE.md...');
 
-    for (final platform in platforms) {
-      if (platform.contextFile != null) {
-        final contextPath = FileUtils.resolvePath(platform.contextFile!);
-        final content = _generateContextFile(platform);
-        await FileUtils.writeFile(contextPath, content);
-        _logger.item(platform.contextFile!, prefix: '  +');
-      }
-    }
+    final contextPath = FileUtils.resolvePath(ClaudeCodeConfig.contextFile);
+    await FileUtils.writeFile(contextPath, _claudeContext);
+    _logger.item(ClaudeCodeConfig.contextFile, prefix: '  +');
   }
 
-  String _generateContextFile(AiPlatformConfig platform) {
-    return '''
-# ${platform.name.toUpperCase()} Instructions
+  static const String _claudeContext = '''
+# CLAUDE.md
 
-Este archivo proporciona instrucciones a ${platform.name} cuando trabaja con DFSpec.
+Este archivo proporciona instrucciones a Claude Code cuando trabaja con DFSpec.
 
 ## Descripcion
 
@@ -293,6 +220,8 @@ y Clean Architecture.
 
 ## Comandos Disponibles
 
+### Flujo Principal
+
 | Comando | Uso | Descripcion |
 |---------|-----|-------------|
 | `/df-spec <feature>` | Crear spec | Define QUE construir |
@@ -300,14 +229,19 @@ y Clean Architecture.
 | `/df-implement <feature>` | Implementar | TDD: Red -> Green -> Refactor |
 | `/df-verify <feature>` | Verificar | Valida implementacion vs spec |
 | `/df-status` | Estado | Dashboard del proyecto |
-| `/df-test` | Testing | unit, widget, integration |
-| `/df-review` | Revision | SOLID, Clean Architecture |
-| `/df-security` | Seguridad | OWASP Mobile Top 10 |
-| `/df-performance` | Performance | 60fps, memory leaks |
-| `/df-quality` | Calidad | Complejidad, code smells |
-| `/df-docs` | Documentacion | Effective Dart |
-| `/df-deps` | Dependencias | Dependencias seguras |
-| `/df-orchestrate` | Pipeline | Orquestacion de agentes |
+
+### Calidad
+
+| Comando | Enfoque |
+|---------|---------|
+| `/df-test` | Testing (unit, widget, integration) |
+| `/df-review` | SOLID, Clean Architecture |
+| `/df-security` | OWASP Mobile Top 10 |
+| `/df-performance` | 60fps, memory leaks |
+| `/df-quality` | Complejidad, code smells |
+| `/df-docs` | Effective Dart |
+| `/df-deps` | Dependencias seguras |
+| `/df-orchestrate` | Pipeline de agentes |
 
 ## Principios Obligatorios
 
@@ -321,13 +255,41 @@ lib/src/
 └── core/            # Constants, theme, network, utils
 ```
 
+**Regla de dependencias:**
+- Domain NO importa Data ni Presentation
+- Data importa Domain
+- Presentation importa Domain
+
 ### TDD Estricto
 
 1. **RED**: Test que falla primero
 2. **GREEN**: Codigo minimo para pasar
 3. **REFACTOR**: Mejorar sin romper tests
 
-### Umbrales de Calidad
+Cada `lib/src/X.dart` requiere `test/unit/X_test.dart`
+
+### Entidades Inmutables
+
+```dart
+class City extends Equatable {
+  const City({required this.id, required this.name});
+  final int id;
+  final String name;
+  @override
+  List<Object?> get props => [id, name];
+}
+```
+
+## Herramientas MCP Disponibles
+
+- `mcp__dart__analyze_files` - Analisis estatico
+- `mcp__dart__run_tests` - Ejecutar tests
+- `mcp__dart__dart_format` - Formatear codigo
+- `mcp__dart__dart_fix` - Aplicar fixes
+- `mcp__dart__pub` - Comandos pub (get, add, outdated)
+- `mcp__dart__pub_dev_search` - Buscar paquetes
+
+## Umbrales de Calidad
 
 | Metrica | Objetivo |
 |---------|----------|
@@ -336,8 +298,17 @@ lib/src/
 | Complejidad cognitiva | <8 |
 | LOC por archivo | <400 |
 | Frame budget | <16ms |
+
+## Estructura de Especificaciones
+
+```
+specs/
+├── features/
+│   └── <feature>.spec.md    # Requisitos y CA
+└── architecture/
+    └── <decision>.md        # ADRs
+```
 ''';
-  }
 
   static const String _specsReadme = '''
 # Especificaciones del Proyecto
@@ -358,7 +329,7 @@ specs/
 ## Como crear una especificacion
 
 1. Crea un archivo `.spec.md` en el directorio apropiado
-2. Usa el template proporcionado o ejecuta `/df-spec` en tu agente de IA
+2. Usa el template proporcionado o ejecuta `/df-spec` en Claude Code
 3. Define claramente los requisitos y criterios de aceptacion
 
 ## Convenciones

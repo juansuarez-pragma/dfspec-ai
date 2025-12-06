@@ -1,16 +1,16 @@
 # DFSpec
 
-**Spec-Driven Development para Dart/Flutter**
+**Spec-Driven Development para Dart/Flutter con Claude Code**
 
 [![Dart](https://img.shields.io/badge/Dart-%5E3.10.1-blue)](https://dart.dev)
 [![Flutter](https://img.shields.io/badge/Flutter-Compatible-02569B)](https://flutter.dev)
 [![License](https://img.shields.io/badge/License-MIT-green)](LICENSE)
-[![Multi-Agent](https://img.shields.io/badge/AI%20Agents-17%20Supported-purple)](https://github.com/juansuarez-pragma/dfspec-ai)
-[![Tests](https://img.shields.io/badge/Tests-235%20Passing-brightgreen)](test/)
+[![Claude Code](https://img.shields.io/badge/Claude%20Code-Optimizado-purple)](https://claude.ai/code)
+[![Tests](https://img.shields.io/badge/Tests-217%20Passing-brightgreen)](test/)
 
-DFSpec es un toolkit **multi-agente** que implementa **Spec-Driven Development (SDD)** especializado para proyectos Dart y Flutter. Transforma especificaciones en implementaciones de alta calidad siguiendo TDD estricto y Clean Architecture.
+DFSpec es un toolkit que implementa **Spec-Driven Development (SDD)** especializado para proyectos Dart y Flutter. Transforma especificaciones en implementaciones de alta calidad siguiendo TDD estricto y Clean Architecture.
 
-Funciona con **17 plataformas de IA**: Claude Code, Gemini CLI, Cursor, GitHub Copilot, OpenAI Codex, Amazon Q, y mas.
+Optimizado para **Claude Code** con soporte completo para modelos opus, sonnet y haiku.
 
 > *"Las especificaciones no sirven al codigo—el codigo sirve a las especificaciones."*
 
@@ -18,7 +18,6 @@ Funciona con **17 plataformas de IA**: Claude Code, Gemini CLI, Cursor, GitHub C
 
 - [Que es Spec-Driven Development?](#que-es-spec-driven-development)
 - [Arquitectura](#arquitectura)
-- [Plataformas Soportadas](#plataformas-soportadas)
 - [Inicio Rapido](#inicio-rapido)
 - [Comandos](#comandos)
 - [Flujo de Trabajo](#flujo-de-trabajo)
@@ -45,8 +44,8 @@ SDD invierte el desarrollo tradicional: **las especificaciones son la fuente pri
 - **TDD estricto** (Red -> Green -> Refactor)
 - **State Management** (Riverpod, BLoC, Provider)
 - **13 agentes especializados** para cada fase del desarrollo
-- **17 plataformas de IA** soportadas
 - **Herramientas MCP** de Dart integradas
+- **Soporte de modelos** opus, sonnet, haiku
 
 ## Arquitectura
 
@@ -62,20 +61,19 @@ dfspec-ia/
 │   ├── dfverifier.md         # Agente para verificacion
 │   └── ...                   # 13 agentes especializados
 ├── lib/src/
+│   ├── config/               # Configuracion Claude Code
 │   ├── loaders/              # Carga agentes desde archivos
 │   ├── parsers/              # Parsea YAML frontmatter
 │   ├── invokers/             # Invocacion multi-agente con modelos
-│   ├── generators/           # Genera comandos para cada plataforma
+│   ├── generators/           # Genera comandos Markdown
 │   └── commands/             # CLI commands
-└── test/                     # 235+ tests
+└── test/                     # 217+ tests
 ```
 
 ### Flujo de Datos
 
 ```
-agents/*.md → AgentLoader → AgentRegistry → CommandTemplate → CommandGenerator → .claude/commands/
-                                                                              → .gemini/commands/
-                                                                              → .cursor/commands/
+agents/*.md → AgentLoader → AgentRegistry → CommandTemplate → ClaudeCommandGenerator → .claude/commands/
 
 Para invocacion multi-agente:
 agents/*.md → AgentLoader → AgentInvoker → Task(model, prompt) → Claude Code Task tool
@@ -109,37 +107,6 @@ Eres un arquitecto de software...
 </responsibilities>
 ```
 
-## Plataformas Soportadas
-
-DFSpec es **agnostico de plataforma** y funciona con 17 agentes de IA:
-
-### CLI-Based (requieren instalacion)
-
-| Plataforma | CLI | Formato | Instalacion |
-|------------|-----|---------|-------------|
-| [Claude Code](https://claude.ai/code) | `claude` | Markdown | [Instalar](https://claude.ai/code) |
-| [Gemini CLI](https://ai.google.dev/gemini-api/docs/cli) | `gemini` | TOML | [Instalar](https://ai.google.dev/gemini-api/docs/cli) |
-| [Cursor](https://cursor.sh) | `cursor-agent` | Markdown | [Instalar](https://cursor.sh) |
-| [OpenAI Codex](https://github.com/openai/codex) | `codex` | Markdown | [Instalar](https://github.com/openai/codex) |
-| [Qwen Code](https://github.com/QwenLM/Qwen) | `qwen` | TOML | [Instalar](https://github.com/QwenLM/Qwen) |
-| [Amazon Q](https://aws.amazon.com/q/developer/) | `q` | Markdown | [Instalar](https://aws.amazon.com/q/developer/) |
-| [opencode](https://github.com/opencode-ai/opencode) | `opencode` | Markdown | [Instalar](https://github.com/opencode-ai/opencode) |
-| [Amp](https://ampcode.com) | `amp` | Markdown | [Instalar](https://ampcode.com) |
-| SHAI | `shai` | Markdown | - |
-| CodeBuddy | `codebuddy` | Markdown | - |
-| Qoder | `qoder` | Markdown | - |
-| Auggie CLI | `auggie` | Markdown | - |
-
-### IDE-Based (integrados en IDE)
-
-| Plataforma | Carpeta | Formato |
-|------------|---------|---------|
-| [GitHub Copilot](https://github.com/features/copilot) | `.github/agents/` | Markdown |
-| [Windsurf](https://windsurf.ai) | `.windsurf/workflows/` | Markdown |
-| Kilo Code | `.kilo/commands/` | Markdown |
-| Roo Code | `.roo/commands/` | Markdown |
-| IBM Bob | `.bob/commands/` | Markdown |
-
 ## Inicio Rapido
 
 ### Prerequisitos
@@ -147,7 +114,7 @@ DFSpec es **agnostico de plataforma** y funciona con 17 agentes de IA:
 - **Dart SDK** 3.10.1+ ([Instalar](https://dart.dev/get-dart))
 - **Flutter SDK** (para proyectos Flutter) ([Instalar](https://flutter.dev/docs/get-started/install))
 - **Git** ([Instalar](https://git-scm.com/downloads))
-- **Al menos una plataforma de IA** instalada (ver [Plataformas Soportadas](#plataformas-soportadas))
+- **Claude Code** instalado ([Instalar](https://claude.ai/code))
 
 ### Instalacion
 
@@ -162,32 +129,25 @@ dart pub global activate --source path .
 # 3. Ir a tu proyecto Flutter/Dart
 cd /path/to/tu-proyecto-flutter
 
-# 4. Inicializar DFSpec (elige tu plataforma)
-dfspec init --agent claude                    # Solo Claude
-dfspec init --agent claude --agent gemini     # Claude + Gemini
-dfspec init --all-agents                      # Todas las plataformas
+# 4. Inicializar DFSpec
+dfspec init
 
 # 5. Instalar comandos slash
-dfspec install                                # Plataforma por defecto (Claude)
-dfspec install --agent gemini                 # Solo Gemini
-dfspec install --detect                       # Auto-detecta CLIs instalados
-dfspec install --all-agents                   # Todas las plataformas
+dfspec install
 ```
 
 ### Resultado
 
 ```
 tu-proyecto-flutter/
-├── .claude/commands/          # Comandos para Claude (Markdown)
+├── .claude/commands/          # Comandos para Claude Code
 │   ├── df-spec.md
 │   ├── df-plan.md
-│   └── ...
-├── .gemini/commands/          # Comandos para Gemini (TOML)
-│   ├── df-spec.toml
-│   ├── df-plan.toml
-│   └── ...
-├── CLAUDE.md                  # Contexto para Claude
-├── GEMINI.md                  # Contexto para Gemini
+│   ├── df-implement.md
+│   ├── df-test.md
+│   ├── df-verify.md
+│   └── df-status.md
+├── CLAUDE.md                  # Contexto del proyecto
 ├── dfspec.yaml                # Configuracion del proyecto
 └── specs/                     # Especificaciones
     └── features/
@@ -197,10 +157,10 @@ tu-proyecto-flutter/
 
 ```bash
 dfspec init [nombre]           # Inicializar proyecto
-dfspec install                 # Instalar comandos slash
+dfspec install                 # Instalar comandos esenciales
+dfspec install --all           # Instalar todos los comandos
 dfspec install --list          # Listar comandos disponibles
-dfspec install --list-agents   # Listar plataformas soportadas
-dfspec install --detect        # Auto-detectar plataformas instaladas
+dfspec install --force         # Sobrescribir existentes
 dfspec agents                  # Listar agentes disponibles
 dfspec agents --info=dftest    # Ver detalles de un agente
 ```
@@ -223,7 +183,7 @@ dfspec agents --info=dftest    # Ver detalles de un agente
 
 ## Comandos
 
-DFSpec proporciona **13 comandos slash** disponibles en todas las plataformas soportadas:
+DFSpec proporciona **13 comandos slash**:
 
 ### Comandos Core (Flujo Principal)
 
@@ -285,7 +245,7 @@ DFSpec proporciona **13 comandos slash** disponibles en todas las plataformas so
 # 1. Especificar la feature
 /df-spec weather-api
 
-# Genera: docs/specs/features/weather-api.spec.md
+# Genera: specs/features/weather-api.spec.md
 # - Requisitos funcionales (RF-01, RF-02...)
 # - Requisitos no funcionales
 # - Criterios de aceptacion
@@ -294,7 +254,7 @@ DFSpec proporciona **13 comandos slash** disponibles en todas las plataformas so
 # 2. Planificar implementacion
 /df-plan weather-api
 
-# Genera: docs/specs/plans/weather-api.plan.md
+# Genera: specs/plans/weather-api.plan.md
 # - Diagrama de arquitectura (Mermaid)
 # - Lista de archivos a crear
 # - Orden de implementacion TDD
@@ -440,42 +400,46 @@ lib/
 ```
 dfspec-ia/
 ├── agents/                    # Definiciones de agentes (fuente de verdad)
-│   ├── dfspec.md
-│   ├── dfplanner.md
-│   ├── dfimplementer.md
-│   └── ...
+│   ├── dfspec.md             # Analista de especificaciones
+│   ├── dfplanner.md          # Arquitecto de soluciones
+│   ├── dfimplementer.md      # Desarrollador TDD
+│   ├── dftest.md             # Especialista QA
+│   ├── dfverifier.md         # Auditor de completitud
+│   └── ...                   # 13 agentes especializados
 ├── lib/
 │   ├── dfspec.dart           # Barrel export
 │   └── src/
-│       ├── commands/         # CLI commands (init, install, agents)
-│       ├── generators/       # Generadores de comandos (Markdown, TOML)
+│       ├── commands/         # CLI commands (init, install, agents, generate)
+│       ├── config/           # Configuracion Claude Code
+│       ├── generators/       # Generadores (comandos, specs)
+│       ├── invokers/         # Invocacion multi-agente
 │       ├── loaders/          # Cargadores de agentes
-│       ├── models/           # Modelos (AgentConfig, AiPlatformConfig)
+│       ├── models/           # Modelos (AgentConfig, DfspecConfig)
 │       ├── parsers/          # Parsers (YAML frontmatter)
 │       ├── templates/        # Templates de artefactos
 │       └── utils/            # Utilidades (Logger, FileUtils)
-├── test/                     # 214+ tests
-│   └── src/
-│       ├── commands/
-│       ├── generators/
-│       ├── loaders/
-│       ├── models/
-│       └── parsers/
+├── templates/                # Templates de especificaciones
+│   └── specs/
+│       ├── feature.spec.md   # Template de feature
+│       └── plan.template.md  # Template de plan
+├── docs/                     # Documentacion
+│   ├── spec-driven-flutter.md
+│   └── plans/                # Planes de implementacion
+├── memory/
+│   └── constitution.md       # Principios inmutables
+├── test/                     # 217+ tests
 ├── bin/
 │   └── dfspec.dart           # Entry point del CLI
 ├── pubspec.yaml
 ├── CHANGELOG.md
+├── CLAUDE.md                 # Contexto para Claude Code
 └── README.md
 ```
 
 ## Documentacion
 
 - [Spec-Driven Development para Flutter](docs/spec-driven-flutter.md)
-- [Guia de Inicio](docs/getting-started.md)
-- [Referencia de Comandos](docs/commands/)
-- [Documentacion de Agentes](docs/agents/)
-- [Arquitectura y Patrones](docs/architecture/)
-- [Ejemplos](docs/examples/)
+- [Constitucion - Principios Inmutables](memory/constitution.md)
 
 ## Contribuir
 
@@ -486,7 +450,7 @@ Las contribuciones son bienvenidas! Por favor lee [CONTRIBUTING.md](CONTRIBUTING
 ```bash
 # Clonar
 git clone https://github.com/juansuarez-pragma/dfspec-ai.git
-cd dfspec-ai
+cd dfspec-ia
 
 # Instalar dependencias
 dart pub get
@@ -520,4 +484,4 @@ MIT License - ver [LICENSE](LICENSE) para detalles.
 
 ---
 
-Construido con Claude Code | Inspirado por [spec-kit](https://github.com/github/spec-kit) | Multi-agente
+Construido con Claude Code | Inspirado por [spec-kit](https://github.com/github/spec-kit)

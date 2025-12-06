@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:args/command_runner.dart';
+import 'package:dfspec/src/config/claude_config.dart';
 import 'package:dfspec/src/generators/command_generator.dart';
 import 'package:dfspec/src/loaders/agent_loader.dart';
 import 'package:dfspec/src/models/models.dart';
@@ -8,23 +9,23 @@ import 'package:dfspec/src/parsers/agent_parser.dart';
 import 'package:dfspec/src/utils/utils.dart';
 import 'package:path/path.dart' as p;
 
-/// Comando para instalar comandos slash en multiples plataformas de IA.
+/// Comando para instalar comandos slash de DFSpec en Claude Code.
 ///
 /// Genera comandos directamente desde los archivos de agentes en `agents/`.
 ///
 /// Uso:
 /// ```bash
-/// dfspec install [--all] [--command=nombre] [--agent=claude]
-/// dfspec install --agent claude --agent gemini
-/// dfspec install --all-agents
-/// dfspec install --detect
+/// dfspec install           # Instala comandos esenciales
+/// dfspec install --all     # Instala todos los comandos
+/// dfspec install -c df-plan -c df-test  # Comandos especificos
+/// dfspec install --force   # Sobrescribe existentes
+/// dfspec install --list    # Lista comandos disponibles
 /// ```
 class InstallCommand extends Command<int> {
   /// Crea una nueva instancia del comando install.
   InstallCommand({AgentLoader? agentLoader})
       : _agentLoader = agentLoader ?? AgentLoader() {
     argParser
-      // Opciones de comandos
       ..addFlag(
         'all',
         abbr: 'a',
@@ -47,29 +48,6 @@ class InstallCommand extends Command<int> {
         abbr: 'l',
         help: 'Lista los comandos disponibles sin instalar.',
         negatable: false,
-      )
-      // Opciones multi-agente
-      ..addMultiOption(
-        'agent',
-        help: 'Plataforma(s) de IA destino. '
-            'Opciones: ${AiPlatformRegistry.allIds.join(", ")}',
-        allowed: AiPlatformRegistry.allIds,
-      )
-      ..addFlag(
-        'all-agents',
-        help: 'Instala para todas las plataformas soportadas.',
-        negatable: false,
-      )
-      ..addFlag(
-        'detect',
-        abbr: 'd',
-        help: 'Auto-detecta plataformas instaladas en el sistema.',
-        negatable: false,
-      )
-      ..addFlag(
-        'list-agents',
-        help: 'Lista las plataformas de IA soportadas.',
-        negatable: false,
       );
   }
 
@@ -79,12 +57,10 @@ class InstallCommand extends Command<int> {
   String get name => 'install';
 
   @override
-  String get description =>
-      'Instala comandos slash de DFSpec para plataformas de IA.';
+  String get description => 'Instala comandos slash de DFSpec para Claude Code.';
 
   @override
-  String get invocation =>
-      'dfspec install [--all] [--command=nombre] [--agent=claude]';
+  String get invocation => 'dfspec install [--all] [--command=nombre]';
 
   final Logger _logger = const Logger();
 
@@ -104,16 +80,6 @@ class InstallCommand extends Command<int> {
     final commands = argResults!['command'] as List<String>;
     final force = argResults!['force'] as bool;
     final listOnly = argResults!['list'] as bool;
-    final agents = argResults!['agent'] as List<String>;
-    final allAgents = argResults!['all-agents'] as bool;
-    final detect = argResults!['detect'] as bool;
-    final listAgents = argResults!['list-agents'] as bool;
-
-    // Modo lista de agentes/plataformas
-    if (listAgents) {
-      _listPlatforms();
-      return 0;
-    }
 
     // Cargar agentes desde archivos
     final agentDefinitions = _agentLoader.loadAll();
@@ -151,20 +117,6 @@ class InstallCommand extends Command<int> {
       return 1;
     }
 
-    // Determinar plataformas destino
-    final targetPlatforms = await _resolveTargetPlatforms(
-      agents: agents,
-      allAgents: allAgents,
-      detect: detect,
-    );
-
-    if (targetPlatforms.isEmpty) {
-      _logger
-        ..error('No se encontraron plataformas de IA.')
-        ..info('Usa --agent para especificar una plataforma.');
-      return 1;
-    }
-
     // Determinar comandos a instalar
     List<String> toInstall;
     if (all) {
@@ -187,117 +139,39 @@ class InstallCommand extends Command<int> {
           .toList();
     }
 
-    _logger.title('Instalando comandos slash');
+    _logger.title('Instalando comandos slash para Claude Code');
 
-    var totalInstalled = 0;
-    var totalSkipped = 0;
-
-    // Instalar para cada plataforma
-    for (final platform in targetPlatforms) {
-      final (installed, skipped) = await _installForPlatform(
-        platform: platform,
-        commands: toInstall,
-        commandToAgent: commandToAgent,
-        force: force,
-      );
-      totalInstalled += installed;
-      totalSkipped += skipped;
-    }
+    // Instalar comandos
+    final (installed, skipped) = await _installCommands(
+      commands: toInstall,
+      commandToAgent: commandToAgent,
+      force: force,
+    );
 
     _logger
       ..blank()
-      ..success(
-        'Instalados: $totalInstalled, Omitidos: $totalSkipped '
-        '(${targetPlatforms.length} plataformas)',
-      );
+      ..success('Instalados: $installed, Omitidos: $skipped');
 
     return 0;
   }
 
-  /// Lista todas las plataformas soportadas.
-  void _listPlatforms() {
-    _logger
-      ..title('Plataformas de IA soportadas')
-      ..info('CLI-Based (requieren instalacion):');
-    for (final platform in AiPlatformRegistry.cliRequired) {
-      final cliInfo =
-          platform.cliCommand != null ? ' (cli: ${platform.cliCommand})' : '';
-      _logger.item('${platform.id} - ${platform.name}$cliInfo');
-    }
-
-    _logger
-      ..blank()
-      ..info('IDE-Based (integradas en IDE):');
-    for (final platform in AiPlatformRegistry.ideBased) {
-      _logger.item('${platform.id} - ${platform.name}');
-    }
-  }
-
-  /// Resuelve las plataformas destino basado en los argumentos.
-  Future<List<AiPlatformConfig>> _resolveTargetPlatforms({
-    required List<String> agents,
-    required bool allAgents,
-    required bool detect,
-  }) async {
-    if (allAgents) {
-      return AiPlatformRegistry.all;
-    }
-
-    if (detect) {
-      return _detectInstalledPlatforms();
-    }
-
-    if (agents.isNotEmpty) {
-      return agents.map((id) => AiPlatformRegistry.getPlatform(id)!).toList();
-    }
-
-    // Default: solo Claude
-    return [AiPlatformRegistry.defaultPlatform];
-  }
-
-  /// Detecta plataformas instaladas en el sistema.
-  Future<List<AiPlatformConfig>> _detectInstalledPlatforms() async {
-    final detected = <AiPlatformConfig>[];
-
-    _logger.info('Detectando plataformas instaladas...');
-
-    for (final platform in AiPlatformRegistry.all) {
-      final available = await platform.isCliAvailable();
-      if (available) {
-        detected.add(platform);
-        _logger.item('${platform.name} detectado', prefix: '  +');
-      }
-    }
-
-    if (detected.isEmpty) {
-      // Si no detecta ninguna, usar Claude por defecto
-      _logger.warning('No se detectaron plataformas. Usando Claude por defecto.');
-      return [AiPlatformRegistry.defaultPlatform];
-    }
-
-    return detected;
-  }
-
-  /// Instala comandos para una plataforma especifica.
-  Future<(int installed, int skipped)> _installForPlatform({
-    required AiPlatformConfig platform,
+  /// Instala los comandos en .claude/commands/.
+  Future<(int installed, int skipped)> _installCommands({
     required List<String> commands,
     required Map<String, AgentDefinition> commandToAgent,
     required bool force,
   }) async {
-    _logger
-      ..blank()
-      ..info('Instalando para ${platform.name}...');
-
-    final outputDir = FileUtils.resolvePath(platform.commandFolder);
+    final outputDir = ClaudeCodeConfig.getCommandFolderPath(
+      Directory.current.path,
+    );
     await FileUtils.ensureDirectory(outputDir);
 
-    final generator = CommandGenerator.forPlatform(platform);
+    const generator = ClaudeCommandGenerator();
     var installed = 0;
     var skipped = 0;
 
     for (final cmd in commands) {
-      final fileName = platform.getCommandFileName(cmd);
+      final fileName = ClaudeCodeConfig.getCommandFileName(cmd);
       final filePath = p.join(outputDir, fileName);
       final exists = FileUtils.fileExists(filePath);
 

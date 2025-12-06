@@ -40,45 +40,24 @@ void main() {
         final option = command.argParser.options['minimal']!;
         expect(option.abbr, equals('m'));
       });
-    });
-
-    group('soporte multi-agente', () {
-      test('soporta option --agent', () {
-        expect(command.argParser.options.containsKey('agent'), isTrue);
-      });
-
-      test('option --agent permite multiples valores', () {
-        final option = command.argParser.options['agent']!;
-        expect(option.isMultiple, isTrue);
-      });
-
-      test('option --agent tiene valores permitidos de plataformas', () {
-        final option = command.argParser.options['agent']!;
-        expect(option.allowed, isNotEmpty);
-        expect(option.allowed, contains('claude'));
-        expect(option.allowed, contains('gemini'));
-        expect(option.allowed, contains('cursor'));
-      });
-
-      test('valores permitidos incluyen todas las plataformas', () {
-        final option = command.argParser.options['agent']!;
-        final allowedIds = option.allowed!;
-
-        for (final id in AiPlatformRegistry.allIds) {
-          expect(
-            allowedIds,
-            contains(id),
-            reason: 'Plataforma $id deberia estar en allowed',
-          );
-        }
-      });
-
-      test('soporta flag --all-agents', () {
-        expect(command.argParser.options.containsKey('all-agents'), isTrue);
-      });
 
       test('soporta flag --with-context', () {
         expect(command.argParser.options.containsKey('with-context'), isTrue);
+      });
+
+      test('flag --with-context tiene default true', () {
+        final option = command.argParser.options['with-context']!;
+        expect(option.defaultsTo, isTrue);
+      });
+    });
+
+    group('arquitectura Claude-first', () {
+      test('no soporta option --agent (eliminado)', () {
+        expect(command.argParser.options.containsKey('agent'), isFalse);
+      });
+
+      test('no soporta flag --all-agents (eliminado)', () {
+        expect(command.argParser.options.containsKey('all-agents'), isFalse);
       });
     });
   });

@@ -55,52 +55,21 @@ void main() {
       });
     });
 
-    group('soporte multi-agente', () {
-      test('soporta option --agent', () {
-        expect(command.argParser.options.containsKey('agent'), isTrue);
+    group('arquitectura Claude-first', () {
+      test('no soporta option --agent (eliminado)', () {
+        expect(command.argParser.options.containsKey('agent'), isFalse);
       });
 
-      test('option --agent permite multiples valores', () {
-        final option = command.argParser.options['agent']!;
-        expect(option.isMultiple, isTrue);
+      test('no soporta flag --all-agents (eliminado)', () {
+        expect(command.argParser.options.containsKey('all-agents'), isFalse);
       });
 
-      test('option --agent tiene valores permitidos de plataformas', () {
-        final option = command.argParser.options['agent']!;
-        expect(option.allowed, isNotEmpty);
-        expect(option.allowed, contains('claude'));
-        expect(option.allowed, contains('gemini'));
-        expect(option.allowed, contains('cursor'));
+      test('no soporta flag --detect (eliminado)', () {
+        expect(command.argParser.options.containsKey('detect'), isFalse);
       });
 
-      test('soporta flag --all-agents', () {
-        expect(command.argParser.options.containsKey('all-agents'), isTrue);
-      });
-
-      test('soporta flag --detect', () {
-        expect(command.argParser.options.containsKey('detect'), isTrue);
-      });
-
-      test('flag --detect tiene abreviatura -d', () {
-        final option = command.argParser.options['detect']!;
-        expect(option.abbr, equals('d'));
-      });
-
-      test('soporta flag --list-agents', () {
-        expect(command.argParser.options.containsKey('list-agents'), isTrue);
-      });
-
-      test('valores permitidos de --agent incluyen todas las plataformas', () {
-        final option = command.argParser.options['agent']!;
-        final allowedIds = option.allowed!;
-
-        for (final id in AiPlatformRegistry.allIds) {
-          expect(
-            allowedIds,
-            contains(id),
-            reason: 'Plataforma $id deberia estar en allowed',
-          );
-        }
+      test('no soporta flag --list-agents (eliminado)', () {
+        expect(command.argParser.options.containsKey('list-agents'), isFalse);
       });
     });
   });

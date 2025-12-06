@@ -7,11 +7,26 @@ y este proyecto adhiere a [Semantic Versioning](https://semver.org/lang/es/).
 
 ## [Unreleased]
 
+### Breaking Changes
+
+#### Arquitectura Claude-First
+- **BREAKING**: Eliminado soporte multi-plataforma (17 plataformas → solo Claude Code)
+- **BREAKING**: Eliminadas opciones CLI: `--agent`, `--all-agents`, `--detect`, `--list-agents`
+- **BREAKING**: Eliminados archivos `ai_platform_registry.dart` y `ai_platform_config.dart`
+- `dfspec init` ahora solo crea estructura para Claude Code (`.claude/commands/`, `CLAUDE.md`)
+- `dfspec install` ahora solo instala en `.claude/commands/`
+
 ### Cambiado
 
+#### Simplificación de Arquitectura
+- `ClaudeCodeConfig` - Nueva configuración centralizada para Claude Code
+- `ClaudeCommandGenerator` - Generador único (eliminados factory pattern y TOML)
+- `InstallCommand` simplificado de 329 a 203 líneas (-126 líneas)
+- `InitCommand` simplificado de 407 a 379 líneas
+- Reducción neta de ~700 líneas de código
+
 #### Arquitectura: Agentes como Single Source of Truth
-- **BREAKING**: Los agentes (`agents/*.md`) son ahora la fuente única de verdad
-- Eliminado `slash_command_templates.dart` - templates generados dinámicamente
+- Los agentes (`agents/*.md`) son la fuente única de verdad
 - `AgentLoader` carga definiciones desde archivos markdown con YAML frontmatter
 - `AgentParser` parsea frontmatter YAML de agentes
 - `CommandTemplate.fromAgent()` genera templates desde definiciones
@@ -23,10 +38,16 @@ y este proyecto adhiere a [Semantic Versioning](https://semver.org/lang/es/).
 
 #### Calidad de Código
 - Aplicadas cascade invocations en generadores y comandos
-- Agregado language specifier a code blocks en documentación
-- Resueltas advertencias de linting (235 tests, 0 errores)
+- Resueltas advertencias de linting (217 tests, 0 errores)
 
 ### Agregado
+
+#### Configuración Claude Code
+- `ClaudeCodeConfig` - Configuración centralizada para Claude Code
+  - Modelos: opus, sonnet, haiku
+  - Herramientas MCP de Dart
+  - Parámetros para Task tool
+  - Generación de frontmatter YAML
 
 #### Sistema de Invocación Multi-Agente
 - `AgentInvoker` - Invoca agentes con el modelo correcto (opus/sonnet/haiku)
@@ -39,12 +60,19 @@ y este proyecto adhiere a [Semantic Versioning](https://semver.org/lang/es/).
 - Agente `dfstatus` - Estado del proyecto (antes solo command)
 - Campo `model` en frontmatter YAML (opus, sonnet, haiku)
 
-#### Documentación
-- Documentación de arquitectura en README.md
-- Diagrama de flujo de datos
-- Sección de estructura del proyecto
-- Tabla de agentes con modelos recomendados
-- Ejemplo de invocación multi-agente
+### Eliminado
+
+- `AiPlatformRegistry` - Registry de 17 plataformas
+- `AiPlatformConfig` - Configuración por plataforma
+- `TomlCommandGenerator` - Generador formato TOML
+- `CommandFormat` enum - Ya no necesario
+- `CommandGenerator` factory pattern - Reemplazado por `ClaudeCommandGenerator`
+- Tests de plataformas múltiples
+
+### Documentación
+- README.md actualizado para arquitectura Claude-first
+- Plan de refactor documentado en `docs/plans/claude-first-refactor.plan.md`
+- Preparación para futura extensión multi-plataforma documentada
 
 ## [0.1.0] - 2024-12-06
 

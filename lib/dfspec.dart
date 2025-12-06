@@ -7,6 +7,9 @@ library;
 // Comandos
 export 'src/commands/commands.dart';
 
+// Configuracion
+export 'src/config/config.dart';
+
 // Generadores
 export 'src/generators/generators.dart';
 
