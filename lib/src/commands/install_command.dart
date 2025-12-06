@@ -2,15 +2,15 @@ import 'dart:io';
 
 import 'package:args/command_runner.dart';
 import 'package:dfspec/src/generators/command_generator.dart';
+import 'package:dfspec/src/loaders/agent_loader.dart';
 import 'package:dfspec/src/models/models.dart';
-import 'package:dfspec/src/templates/templates.dart';
+import 'package:dfspec/src/parsers/agent_parser.dart';
 import 'package:dfspec/src/utils/utils.dart';
 import 'package:path/path.dart' as p;
 
 /// Comando para instalar comandos slash en multiples plataformas de IA.
 ///
-/// Soporta instalacion para Claude Code, Gemini CLI, Cursor, GitHub Copilot,
-/// y otras plataformas de IA.
+/// Genera comandos directamente desde los archivos de agentes en `agents/`.
 ///
 /// Uso:
 /// ```bash
@@ -21,7 +21,8 @@ import 'package:path/path.dart' as p;
 /// ```
 class InstallCommand extends Command<int> {
   /// Crea una nueva instancia del comando install.
-  InstallCommand() {
+  InstallCommand({AgentLoader? agentLoader})
+      : _agentLoader = agentLoader ?? AgentLoader() {
     argParser
       // Opciones de comandos
       ..addFlag(
@@ -72,6 +73,8 @@ class InstallCommand extends Command<int> {
       );
   }
 
+  final AgentLoader _agentLoader;
+
   @override
   String get name => 'install';
 
@@ -85,6 +88,16 @@ class InstallCommand extends Command<int> {
 
   final Logger _logger = const Logger();
 
+  /// Comandos esenciales por defecto.
+  static const List<String> _essentialCommands = [
+    'df-spec',
+    'df-plan',
+    'df-implement',
+    'df-test',
+    'df-verify',
+    'df-status',
+  ];
+
   @override
   Future<int> run() async {
     final all = argResults!['all'] as bool;
@@ -96,21 +109,35 @@ class InstallCommand extends Command<int> {
     final detect = argResults!['detect'] as bool;
     final listAgents = argResults!['list-agents'] as bool;
 
-    // Modo lista de agentes
+    // Modo lista de agentes/plataformas
     if (listAgents) {
       _listPlatforms();
       return 0;
     }
 
-    // Obtener comandos disponibles
-    const availableCommands = SlashCommandTemplates.available;
+    // Cargar agentes desde archivos
+    final agentDefinitions = _agentLoader.loadAll();
+    if (agentDefinitions.isEmpty) {
+      _logger.error(
+        'No se encontraron agentes en ${_agentLoader.agentsPath}',
+      );
+      return 1;
+    }
+
+    // Crear mapa de comando -> agente
+    final commandToAgent = <String, AgentDefinition>{};
+    for (final agent in agentDefinitions) {
+      commandToAgent[agent.slashCommand] = agent;
+    }
+
+    final availableCommands = commandToAgent.keys.toList()..sort();
 
     // Modo lista de comandos
     if (listOnly) {
       _logger.title('Comandos slash disponibles');
       for (final cmd in availableCommands) {
-        final info = SlashCommandTemplates.getInfo(cmd);
-        _logger.item('$cmd - ${info['description']}');
+        final agent = commandToAgent[cmd]!;
+        _logger.item('$cmd - ${_truncate(agent.description, 60)}');
       }
       return 0;
     }
@@ -132,8 +159,9 @@ class InstallCommand extends Command<int> {
     );
 
     if (targetPlatforms.isEmpty) {
-      _logger.error('No se encontraron plataformas de IA.');
-      _logger.info('Usa --agent para especificar una plataforma.');
+      _logger
+        ..error('No se encontraron plataformas de IA.')
+        ..info('Usa --agent para especificar una plataforma.');
       return 1;
     }
 
@@ -144,7 +172,7 @@ class InstallCommand extends Command<int> {
     } else if (commands.isNotEmpty) {
       // Validar que los comandos existan
       for (final cmd in commands) {
-        if (!availableCommands.contains(cmd)) {
+        if (!commandToAgent.containsKey(cmd)) {
           _logger
             ..error('Comando desconocido: $cmd')
             ..info('Usa --list para ver los comandos disponibles.');
@@ -154,7 +182,9 @@ class InstallCommand extends Command<int> {
       toInstall = commands;
     } else {
       // Instalar comandos esenciales por defecto
-      toInstall = SlashCommandTemplates.essential;
+      toInstall = _essentialCommands
+          .where(commandToAgent.containsKey)
+          .toList();
     }
 
     _logger.title('Instalando comandos slash');
@@ -167,6 +197,7 @@ class InstallCommand extends Command<int> {
       final (installed, skipped) = await _installForPlatform(
         platform: platform,
         commands: toInstall,
+        commandToAgent: commandToAgent,
         force: force,
       );
       totalInstalled += installed;
@@ -185,9 +216,9 @@ class InstallCommand extends Command<int> {
 
   /// Lista todas las plataformas soportadas.
   void _listPlatforms() {
-    _logger.title('Plataformas de IA soportadas');
-
-    _logger.info('CLI-Based (requieren instalacion):');
+    _logger
+      ..title('Plataformas de IA soportadas')
+      ..info('CLI-Based (requieren instalacion):');
     for (final platform in AiPlatformRegistry.cliRequired) {
       final cliInfo =
           platform.cliCommand != null ? ' (cli: ${platform.cliCommand})' : '';
@@ -251,6 +282,7 @@ class InstallCommand extends Command<int> {
   Future<(int installed, int skipped)> _installForPlatform({
     required AiPlatformConfig platform,
     required List<String> commands,
+    required Map<String, AgentDefinition> commandToAgent,
     required bool force,
   }) async {
     _logger
@@ -275,16 +307,9 @@ class InstallCommand extends Command<int> {
         continue;
       }
 
-      // Obtener template y generar contenido
-      final templateContent = SlashCommandTemplates.getTemplate(cmd);
-      final info = SlashCommandTemplates.getInfo(cmd);
-
-      final template = CommandTemplate(
-        name: cmd,
-        description: info['description'] ?? 'Sin descripcion',
-        tools: _extractToolsFromTemplate(templateContent),
-        content: _extractContentFromTemplate(templateContent),
-      );
+      // Obtener agente y generar template
+      final agent = commandToAgent[cmd]!;
+      final template = CommandTemplate.fromAgent(agent);
 
       final content = generator.generate(template);
       await FileUtils.writeFile(filePath, content, overwrite: true);
@@ -295,22 +320,10 @@ class InstallCommand extends Command<int> {
     return (installed, skipped);
   }
 
-  /// Extrae la lista de tools del template existente.
-  List<String> _extractToolsFromTemplate(String template) {
-    final match = RegExp(r'allowed-tools:\s*(.+)').firstMatch(template);
-    if (match == null) return [];
-
-    final toolsLine = match.group(1)!;
-    return toolsLine.split(',').map((t) => t.trim()).toList();
-  }
-
-  /// Extrae el contenido del template (despues del frontmatter).
-  String _extractContentFromTemplate(String template) {
-    final parts = template.split('---');
-    if (parts.length >= 3) {
-      // Retorna todo despues del segundo '---'
-      return parts.sublist(2).join('---').trim();
-    }
-    return template;
+  /// Trunca un string a una longitud maxima.
+  String _truncate(String text, int maxLength) {
+    final singleLine = text.replaceAll('\n', ' ').trim();
+    if (singleLine.length <= maxLength) return singleLine;
+    return '${singleLine.substring(0, maxLength - 3)}...';
   }
 }

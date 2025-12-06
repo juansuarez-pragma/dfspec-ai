@@ -1,4 +1,5 @@
 import 'package:args/command_runner.dart';
+import 'package:dfspec/src/loaders/agent_loader.dart';
 import 'package:dfspec/src/models/models.dart';
 import 'package:dfspec/src/utils/utils.dart';
 
@@ -15,7 +16,8 @@ import 'package:dfspec/src/utils/utils.dart';
 /// ```
 class AgentsCommand extends Command<int> {
   /// Crea una nueva instancia del comando agents.
-  AgentsCommand() {
+  AgentsCommand({AgentLoader? agentLoader})
+      : _agentLoader = agentLoader ?? AgentLoader() {
     argParser
       ..addOption(
         'info',
@@ -39,6 +41,9 @@ class AgentsCommand extends Command<int> {
       );
   }
 
+  final AgentLoader _agentLoader;
+  late AgentRegistry _registry;
+
   @override
   String get name => 'agents';
 
@@ -53,6 +58,9 @@ class AgentsCommand extends Command<int> {
 
   @override
   Future<int> run() async {
+    // Inicializar el registry
+    _registry = AgentRegistry(loader: _agentLoader)..initialize();
+
     final infoAgent = argResults!['info'] as String?;
     final categoryFilter = argResults!['category'] as String?;
     final capabilityFilter = argResults!['capability'] as String?;
@@ -64,13 +72,13 @@ class AgentsCommand extends Command<int> {
     }
 
     // Obtener agentes filtrados
-    var agents = AgentRegistry.all;
+    var agents = _registry.all;
 
     if (categoryFilter != null) {
       final category = AgentCategory.values.firstWhere(
         (c) => c.name == categoryFilter,
       );
-      agents = AgentRegistry.byCategory(category);
+      agents = _registry.byCategory(category);
     }
 
     if (capabilityFilter != null) {
@@ -87,7 +95,7 @@ class AgentsCommand extends Command<int> {
   }
 
   int _showAgentInfo(String agentId, {required bool jsonOutput}) {
-    final agent = AgentRegistry.getAgent(agentId);
+    final agent = _registry.getAgent(agentId);
 
     if (agent == null) {
       _logger..error('Agente no encontrado: $agentId')

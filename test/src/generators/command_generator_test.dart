@@ -1,5 +1,6 @@
 import 'package:dfspec/src/generators/command_generator.dart';
 import 'package:dfspec/src/models/ai_platform_config.dart';
+import 'package:dfspec/src/parsers/agent_parser.dart';
 import 'package:test/test.dart';
 
 void main() {
@@ -16,6 +17,39 @@ void main() {
       expect(template.description, equals('Crea especificaciones'));
       expect(template.tools, equals(['Read', 'Write', 'Glob']));
       expect(template.content, equals('Contenido del comando'));
+    });
+
+    test('fromAgent debe crear template desde AgentDefinition', () {
+      const agent = AgentDefinition(
+        id: 'dfplanner',
+        name: 'dfplanner',
+        description: 'Arquitecto de soluciones',
+        content: '# Agente dfplanner\n\nContenido completo.',
+        slashCommand: 'df-plan',
+        model: 'opus',
+        tools: ['Read', 'Glob', 'Grep'],
+      );
+
+      final template = CommandTemplate.fromAgent(agent);
+
+      expect(template.name, equals('df-plan'));
+      expect(template.description, equals('Arquitecto de soluciones'));
+      expect(template.tools, equals(['Read', 'Glob', 'Grep']));
+      expect(template.content, equals('# Agente dfplanner\n\nContenido completo.'));
+    });
+
+    test('fromAgent debe manejar agente sin tools', () {
+      const agent = AgentDefinition(
+        id: 'dfstatus',
+        name: 'dfstatus',
+        description: 'Muestra estado del proyecto',
+        content: '# Status',
+        slashCommand: 'df-status',
+      );
+
+      final template = CommandTemplate.fromAgent(agent);
+
+      expect(template.tools, isEmpty);
     });
   });
 

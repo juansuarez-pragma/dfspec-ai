@@ -5,6 +5,34 @@ Todos los cambios notables de este proyecto seran documentados en este archivo.
 El formato esta basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.0.0/),
 y este proyecto adhiere a [Semantic Versioning](https://semver.org/lang/es/).
 
+## [Unreleased]
+
+### Cambiado
+
+#### Arquitectura: Agentes como Single Source of Truth
+- **BREAKING**: Los agentes (`agents/*.md`) son ahora la fuente única de verdad
+- Eliminado `slash_command_templates.dart` - templates generados dinámicamente
+- `AgentLoader` carga definiciones desde archivos markdown con YAML frontmatter
+- `AgentParser` parsea frontmatter YAML de agentes
+- `CommandTemplate.fromAgent()` genera templates desde definiciones
+- `AgentRegistry` refactorizado para usar `AgentLoader`
+
+#### Performance
+- `AgentLoader` convertido de async a sync (evita `avoid_slow_async_io`)
+- Métodos `listAvailable()`, `load()`, `loadAll()`, `exists()` ahora síncronos
+
+#### Calidad de Código
+- Aplicadas cascade invocations en generadores y comandos
+- Agregado language specifier a code blocks en documentación
+- Resueltas advertencias de linting (214 tests, 0 errores)
+
+### Agregado
+- Agente `dfspec` - Crear/analizar especificaciones (antes solo command)
+- Agente `dfstatus` - Estado del proyecto (antes solo command)
+- Documentación de arquitectura en README.md
+- Diagrama de flujo de datos
+- Sección de estructura del proyecto
+
 ## [0.1.0] - 2024-12-06
 
 ### Agregado
@@ -31,7 +59,7 @@ y este proyecto adhiere a [Semantic Versioning](https://semver.org/lang/es/).
 - `/df-deps` - Gestion de dependencias
 - `/df-orchestrate` - Pipeline de agentes
 
-#### Agentes (11)
+#### Agentes (13)
 - `dforchestrator` - Coordinacion de agentes
 - `dfplanner` - Arquitecto de soluciones
 - `dfimplementer` - Desarrollador TDD
@@ -43,6 +71,8 @@ y este proyecto adhiere a [Semantic Versioning](https://semver.org/lang/es/).
 - `dfcodequality` - Analista de calidad
 - `dfdocumentation` - Documentacion
 - `dfdependencies` - Gestion de dependencias
+- `dfspec` - Analista de especificaciones
+- `dfstatus` - Monitor de estado
 
 #### Generadores
 - `SpecGenerator` - Motor de generacion de especificaciones

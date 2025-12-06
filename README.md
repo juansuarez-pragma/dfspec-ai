@@ -6,6 +6,7 @@
 [![Flutter](https://img.shields.io/badge/Flutter-Compatible-02569B)](https://flutter.dev)
 [![License](https://img.shields.io/badge/License-MIT-green)](LICENSE)
 [![Multi-Agent](https://img.shields.io/badge/AI%20Agents-17%20Supported-purple)](https://github.com/juansuarez-pragma/dfspec-ai)
+[![Tests](https://img.shields.io/badge/Tests-214%20Passing-brightgreen)](test/)
 
 DFSpec es un toolkit **multi-agente** que implementa **Spec-Driven Development (SDD)** especializado para proyectos Dart y Flutter. Transforma especificaciones en implementaciones de alta calidad siguiendo TDD estricto y Clean Architecture.
 
@@ -16,34 +17,93 @@ Funciona con **17 plataformas de IA**: Claude Code, Gemini CLI, Cursor, GitHub C
 ## Tabla de Contenidos
 
 - [Que es Spec-Driven Development?](#que-es-spec-driven-development)
+- [Arquitectura](#arquitectura)
 - [Plataformas Soportadas](#plataformas-soportadas)
 - [Inicio Rapido](#inicio-rapido)
 - [Comandos](#comandos)
 - [Flujo de Trabajo](#flujo-de-trabajo)
 - [Agentes Especializados](#agentes-especializados)
 - [Principios](#principios)
+- [Estructura del Proyecto](#estructura-del-proyecto)
 - [Documentacion](#documentacion)
 - [Contribuir](#contribuir)
 
 ## Que es Spec-Driven Development?
 
-SDD invierte el desarrollo tradicional: **las especificaciones son la fuente primaria de verdad**, no el código.
+SDD invierte el desarrollo tradicional: **las especificaciones son la fuente primaria de verdad**, no el codigo.
 
 | Tradicional | Spec-Driven |
 |-------------|-------------|
-| Escribir código → documentar después | Especificar → generar código |
-| Documentación desactualizada | Spec siempre sincronizada |
-| Debugging en código | Debugging en especificación |
-| Cambios manuales propagados | Regeneración sistemática |
+| Escribir codigo → documentar despues | Especificar → generar codigo |
+| Documentacion desactualizada | Spec siempre sincronizada |
+| Debugging en codigo | Debugging en especificacion |
+| Cambios manuales propagados | Regeneracion sistematica |
 
 **DFSpec** adapta esta metodologia especificamente para el ecosistema **Dart/Flutter**, integrando:
 
 - **Clean Architecture** como patron obligatorio
 - **TDD estricto** (Red -> Green -> Refactor)
 - **State Management** (Riverpod, BLoC, Provider)
-- **11 agentes especializados** para cada fase del desarrollo
+- **13 agentes especializados** para cada fase del desarrollo
 - **17 plataformas de IA** soportadas
 - **Herramientas MCP** de Dart integradas
+
+## Arquitectura
+
+DFSpec usa **agentes como fuente unica de verdad**. Cada agente es un archivo Markdown con YAML frontmatter que define su comportamiento:
+
+```
+dfspec-ia/
+├── agents/                    # Fuente unica de verdad
+│   ├── dfspec.md             # Agente para especificaciones
+│   ├── dfplanner.md          # Agente para planificacion
+│   ├── dfimplementer.md      # Agente para implementacion TDD
+│   ├── dftest.md             # Agente para testing
+│   ├── dfverifier.md         # Agente para verificacion
+│   └── ...                   # 13 agentes especializados
+├── lib/src/
+│   ├── loaders/              # Carga agentes desde archivos
+│   ├── parsers/              # Parsea YAML frontmatter
+│   ├── generators/           # Genera comandos para cada plataforma
+│   └── commands/             # CLI commands
+└── test/                     # 214+ tests
+```
+
+### Flujo de Datos
+
+```
+agents/*.md → AgentLoader → AgentRegistry → CommandTemplate → CommandGenerator → .claude/commands/
+                                                                              → .gemini/commands/
+                                                                              → .cursor/commands/
+```
+
+### Formato de Agente
+
+```yaml
+---
+name: dfplanner
+description: >
+  Arquitecto de soluciones especializado en Clean Architecture...
+model: opus
+tools:
+  - Read
+  - Write
+  - Glob
+  - Grep
+---
+
+# Agente dfplanner
+
+<role>
+Eres un arquitecto de software...
+</role>
+
+<responsibilities>
+1. ANALIZAR requisitos
+2. DISENAR arquitectura
+...
+</responsibilities>
+```
 
 ## Plataformas Soportadas
 
@@ -137,6 +197,8 @@ dfspec install                 # Instalar comandos slash
 dfspec install --list          # Listar comandos disponibles
 dfspec install --list-agents   # Listar plataformas soportadas
 dfspec install --detect        # Auto-detectar plataformas instaladas
+dfspec agents                  # Listar agentes disponibles
+dfspec agents --info=dftest    # Ver detalles de un agente
 ```
 
 ### Uso Basico
@@ -258,21 +320,53 @@ DFSpec proporciona **13 comandos slash** disponibles en todas las plataformas so
 
 ## Agentes Especializados
 
-DFSpec incluye **11 agentes** especializados en diferentes aspectos del desarrollo Flutter:
+DFSpec incluye **13 agentes** especializados definidos en la carpeta `agents/`:
 
-| Agente | Rol | Capacidades |
-|--------|-----|-------------|
-| **dfplanner** | Arquitecto | Diseño de features, arquitectura, state management |
-| **dfimplementer** | Desarrollador | TDD estricto, BLoC, Riverpod, Provider |
-| **dftest** | QA | Tests unitarios, widget, integracion, golden |
-| **dfverifier** | Auditor | Verificacion spec vs implementacion |
-| **dfsolid** | Guardian SOLID | Validar principios SOLID, DRY, YAGNI |
-| **dfsecurity** | Seguridad | OWASP Mobile Top 10, Platform Channels |
-| **dfperformance** | Performance | 60fps, widget rebuilds, memory leaks |
-| **dfcodequality** | Calidad | Complejidad ciclomatica/cognitiva |
-| **dfdocumentation** | Documentacion | Effective Dart, README |
-| **dfdependencies** | Dependencias | pub.dev, slopsquatting, deprecaciones |
-| **dforchestrator** | Coordinador | Pipelines de agentes |
+| Agente | Comando | Rol | Capacidades |
+|--------|---------|-----|-------------|
+| **dfspec** | `/df-spec` | Especificador | Requisitos funcionales, criterios de aceptacion |
+| **dfplanner** | `/df-plan` | Arquitecto | Diseno de features, arquitectura, state management |
+| **dfimplementer** | `/df-implement` | Desarrollador | TDD estricto, BLoC, Riverpod, Provider |
+| **dftest** | `/df-test` | QA | Tests unitarios, widget, integracion, golden |
+| **dfverifier** | `/df-verify` | Auditor | Verificacion spec vs implementacion |
+| **dfstatus** | `/df-status` | Dashboard | Estado del proyecto, metricas |
+| **dfsolid** | `/df-review` | Guardian SOLID | Validar principios SOLID, DRY, YAGNI |
+| **dfsecurity** | `/df-security` | Seguridad | OWASP Mobile Top 10, Platform Channels |
+| **dfperformance** | `/df-performance` | Performance | 60fps, widget rebuilds, memory leaks |
+| **dfcodequality** | `/df-quality` | Calidad | Complejidad ciclomatica/cognitiva |
+| **dfdocumentation** | `/df-docs` | Documentacion | Effective Dart, README |
+| **dfdependencies** | `/df-deps` | Dependencias | pub.dev, slopsquatting, deprecaciones |
+| **dforchestrator** | `/df-orchestrate` | Coordinador | Pipelines de agentes |
+
+### Agregar un Nuevo Agente
+
+Para agregar un nuevo agente, crea un archivo `agents/dfnuevo.md`:
+
+```yaml
+---
+name: dfnuevo
+description: >
+  Descripcion del agente...
+model: sonnet
+tools:
+  - Read
+  - Write
+  - Glob
+---
+
+# Agente dfnuevo
+
+<role>
+Tu rol aqui...
+</role>
+
+<responsibilities>
+1. Responsabilidad 1
+2. Responsabilidad 2
+</responsibilities>
+```
+
+Luego ejecuta `dfspec install --force` para regenerar los comandos.
 
 ## Principios
 
@@ -317,6 +411,39 @@ lib/
 | LOC por archivo | <400 |
 | Frame budget Flutter | <16ms |
 
+## Estructura del Proyecto
+
+```
+dfspec-ia/
+├── agents/                    # Definiciones de agentes (fuente de verdad)
+│   ├── dfspec.md
+│   ├── dfplanner.md
+│   ├── dfimplementer.md
+│   └── ...
+├── lib/
+│   ├── dfspec.dart           # Barrel export
+│   └── src/
+│       ├── commands/         # CLI commands (init, install, agents)
+│       ├── generators/       # Generadores de comandos (Markdown, TOML)
+│       ├── loaders/          # Cargadores de agentes
+│       ├── models/           # Modelos (AgentConfig, AiPlatformConfig)
+│       ├── parsers/          # Parsers (YAML frontmatter)
+│       ├── templates/        # Templates de artefactos
+│       └── utils/            # Utilidades (Logger, FileUtils)
+├── test/                     # 214+ tests
+│   └── src/
+│       ├── commands/
+│       ├── generators/
+│       ├── loaders/
+│       ├── models/
+│       └── parsers/
+├── bin/
+│   └── dfspec.dart           # Entry point del CLI
+├── pubspec.yaml
+├── CHANGELOG.md
+└── README.md
+```
+
 ## Documentacion
 
 - [Spec-Driven Development para Flutter](docs/spec-driven-flutter.md)
@@ -345,6 +472,22 @@ dart test
 
 # Analisis estatico
 dart analyze
+
+# Formatear codigo
+dart format .
+```
+
+### Ejecutar Tests Especificos
+
+```bash
+# Todos los tests
+dart test
+
+# Tests de un archivo
+dart test test/src/loaders/agent_loader_test.dart
+
+# Tests con nombre
+dart test --name "debe cargar"
 ```
 
 ## Licencia

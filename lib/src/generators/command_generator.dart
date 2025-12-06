@@ -1,4 +1,5 @@
 import 'package:dfspec/src/models/ai_platform_config.dart';
+import 'package:dfspec/src/parsers/agent_parser.dart';
 import 'package:meta/meta.dart';
 
 /// Template de un comando slash con su contenido.
@@ -11,6 +12,16 @@ class CommandTemplate {
     required this.tools,
     required this.content,
   });
+
+  /// Crea un template desde una definicion de agente.
+  factory CommandTemplate.fromAgent(AgentDefinition agent) {
+    return CommandTemplate(
+      name: agent.slashCommand,
+      description: agent.description,
+      tools: agent.tools,
+      content: agent.content,
+    );
+  }
 
   /// Nombre del comando (ej: 'df-spec').
   final String name;
@@ -48,18 +59,15 @@ abstract class CommandGenerator {
 class MarkdownCommandGenerator implements CommandGenerator {
   @override
   String generate(CommandTemplate template) {
-    final buffer = StringBuffer();
-
-    // Frontmatter YAML
-    buffer
+    final buffer = StringBuffer()
+      // Frontmatter YAML
       ..writeln('---')
       ..writeln('description: ${template.description}')
       ..writeln('allowed-tools: ${template.tools.join(', ')}')
       ..writeln('---')
-      ..writeln();
-
-    // Contenido del comando
-    buffer.write(template.content);
+      ..writeln()
+      // Contenido del comando
+      ..write(template.content);
 
     return buffer.toString();
   }
@@ -71,18 +79,14 @@ class MarkdownCommandGenerator implements CommandGenerator {
 class TomlCommandGenerator implements CommandGenerator {
   @override
   String generate(CommandTemplate template) {
-    final buffer = StringBuffer();
-
-    // Seccion [command]
-    buffer
+    final buffer = StringBuffer()
+      // Seccion [command]
       ..writeln('[command]')
       ..writeln('name = "${template.name}"')
       ..writeln('description = "${_escapeTomlString(template.description)}"')
       ..writeln('tools = [${_formatToolsArray(template.tools)}]')
-      ..writeln();
-
-    // Seccion [prompt]
-    buffer
+      ..writeln()
+      // Seccion [prompt]
       ..writeln('[prompt]')
       ..writeln('content = """')
       ..writeln(template.content)
