@@ -22,35 +22,86 @@ void main() {
       expect(command.invocation, contains('dfspec install'));
     });
 
-    test('soporta flag --all', () {
-      expect(command.argParser.options.containsKey('all'), isTrue);
+    group('flags existentes', () {
+      test('soporta flag --all', () {
+        expect(command.argParser.options.containsKey('all'), isTrue);
+      });
+
+      test('soporta flag --force', () {
+        expect(command.argParser.options.containsKey('force'), isTrue);
+      });
+
+      test('soporta flag --list', () {
+        expect(command.argParser.options.containsKey('list'), isTrue);
+      });
+
+      test('soporta option --command', () {
+        expect(command.argParser.options.containsKey('command'), isTrue);
+      });
+
+      test('flag --all tiene abreviatura -a', () {
+        final option = command.argParser.options['all']!;
+        expect(option.abbr, equals('a'));
+      });
+
+      test('flag --list tiene abreviatura -l', () {
+        final option = command.argParser.options['list']!;
+        expect(option.abbr, equals('l'));
+      });
+
+      test('option --command permite multiples valores', () {
+        final option = command.argParser.options['command']!;
+        expect(option.isMultiple, isTrue);
+      });
     });
 
-    test('soporta flag --force', () {
-      expect(command.argParser.options.containsKey('force'), isTrue);
-    });
+    group('soporte multi-agente', () {
+      test('soporta option --agent', () {
+        expect(command.argParser.options.containsKey('agent'), isTrue);
+      });
 
-    test('soporta flag --list', () {
-      expect(command.argParser.options.containsKey('list'), isTrue);
-    });
+      test('option --agent permite multiples valores', () {
+        final option = command.argParser.options['agent']!;
+        expect(option.isMultiple, isTrue);
+      });
 
-    test('soporta option --command', () {
-      expect(command.argParser.options.containsKey('command'), isTrue);
-    });
+      test('option --agent tiene valores permitidos de plataformas', () {
+        final option = command.argParser.options['agent']!;
+        expect(option.allowed, isNotEmpty);
+        expect(option.allowed, contains('claude'));
+        expect(option.allowed, contains('gemini'));
+        expect(option.allowed, contains('cursor'));
+      });
 
-    test('flag --all tiene abreviatura -a', () {
-      final option = command.argParser.options['all']!;
-      expect(option.abbr, equals('a'));
-    });
+      test('soporta flag --all-agents', () {
+        expect(command.argParser.options.containsKey('all-agents'), isTrue);
+      });
 
-    test('flag --list tiene abreviatura -l', () {
-      final option = command.argParser.options['list']!;
-      expect(option.abbr, equals('l'));
-    });
+      test('soporta flag --detect', () {
+        expect(command.argParser.options.containsKey('detect'), isTrue);
+      });
 
-    test('option --command permite multiples valores', () {
-      final option = command.argParser.options['command']!;
-      expect(option.isMultiple, isTrue);
+      test('flag --detect tiene abreviatura -d', () {
+        final option = command.argParser.options['detect']!;
+        expect(option.abbr, equals('d'));
+      });
+
+      test('soporta flag --list-agents', () {
+        expect(command.argParser.options.containsKey('list-agents'), isTrue);
+      });
+
+      test('valores permitidos de --agent incluyen todas las plataformas', () {
+        final option = command.argParser.options['agent']!;
+        final allowedIds = option.allowed!;
+
+        for (final id in AiPlatformRegistry.allIds) {
+          expect(
+            allowedIds,
+            contains(id),
+            reason: 'Plataforma $id deberia estar en allowed',
+          );
+        }
+      });
     });
   });
 }

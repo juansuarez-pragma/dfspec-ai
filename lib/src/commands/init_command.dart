@@ -7,11 +7,14 @@ import 'package:dfspec/src/utils/utils.dart';
 /// Comando para inicializar un proyecto con estructura DFSpec.
 ///
 /// Crea la estructura de directorios y archivos necesarios
-/// para trabajar con Spec-Driven Development.
+/// para trabajar con Spec-Driven Development en multiples
+/// plataformas de IA.
 ///
 /// Uso:
 /// ```bash
 /// dfspec init [nombre_proyecto]
+/// dfspec init --agent claude --agent gemini
+/// dfspec init --all-agents
 /// ```
 class InitCommand extends Command<int> {
   /// Crea una nueva instancia del comando init.
@@ -28,6 +31,23 @@ class InitCommand extends Command<int> {
         abbr: 'm',
         help: 'Crea solo la estructura minima.',
         negatable: false,
+      )
+      // Opciones multi-agente
+      ..addMultiOption(
+        'agent',
+        help: 'Plataforma(s) de IA a configurar. '
+            'Opciones: ${AiPlatformRegistry.allIds.join(", ")}',
+        allowed: AiPlatformRegistry.allIds,
+      )
+      ..addFlag(
+        'all-agents',
+        help: 'Configura todas las plataformas soportadas.',
+        negatable: false,
+      )
+      ..addFlag(
+        'with-context',
+        help: 'Genera archivos de contexto (CLAUDE.md, GEMINI.md, etc.).',
+        defaultsTo: true,
       );
   }
 
@@ -39,7 +59,7 @@ class InitCommand extends Command<int> {
       'Inicializa un proyecto con estructura DFSpec para Spec-Driven Development.';
 
   @override
-  String get invocation => 'dfspec init [nombre_proyecto]';
+  String get invocation => 'dfspec init [nombre_proyecto] [--agent=claude]';
 
   final Logger _logger = const Logger();
 
@@ -47,6 +67,9 @@ class InitCommand extends Command<int> {
   Future<int> run() async {
     final force = argResults!['force'] as bool;
     final minimal = argResults!['minimal'] as bool;
+    final agents = argResults!['agent'] as List<String>;
+    final allAgents = argResults!['all-agents'] as bool;
+    final withContext = argResults!['with-context'] as bool;
 
     // Obtener nombre del proyecto
     final projectName = argResults!.rest.isNotEmpty
@@ -66,22 +89,45 @@ class InitCommand extends Command<int> {
         return 1;
       }
 
+      // Determinar plataformas destino
+      final targetPlatforms = _resolveTargetPlatforms(
+        agents: agents,
+        allAgents: allAgents,
+      );
+
       // Crear estructura de directorios
-      await _createDirectoryStructure(minimal: minimal);
+      await _createDirectoryStructure(
+        minimal: minimal,
+        platforms: targetPlatforms,
+      );
 
       // Crear archivo de configuracion
-      await _createConfigFile(projectName);
+      await _createConfigFile(projectName, targetPlatforms);
 
       // Crear archivos base
       await _createBaseFiles(minimal: minimal);
 
-      _logger..blank()
-      ..success('Proyecto inicializado correctamente!')
-      ..blank()
-      ..info('Proximos pasos:')
-      ..item('Ejecuta: dfspec install')
-      ..item('Crea tu primera especificacion en specs/')
-      ..item('Usa /df-spec en Claude Code para comenzar');
+      // Crear archivos de contexto
+      if (withContext) {
+        await _createContextFiles(targetPlatforms);
+      }
+
+      _logger
+        ..blank()
+        ..success('Proyecto inicializado correctamente!')
+        ..blank()
+        ..info('Plataformas configuradas:');
+
+      for (final platform in targetPlatforms) {
+        _logger.item('${platform.name} (${platform.commandFolder})');
+      }
+
+      _logger
+        ..blank()
+        ..info('Proximos pasos:')
+        ..item('Ejecuta: dfspec install')
+        ..item('Crea tu primera especificacion en specs/')
+        ..item('Usa /df-spec en tu agente de IA para comenzar');
 
       return 0;
     } catch (e) {
@@ -90,14 +136,38 @@ class InitCommand extends Command<int> {
     }
   }
 
-  Future<void> _createDirectoryStructure({required bool minimal}) async {
+  /// Resuelve las plataformas destino basado en los argumentos.
+  List<AiPlatformConfig> _resolveTargetPlatforms({
+    required List<String> agents,
+    required bool allAgents,
+  }) {
+    if (allAgents) {
+      return AiPlatformRegistry.all;
+    }
+
+    if (agents.isNotEmpty) {
+      return agents.map((id) => AiPlatformRegistry.getPlatform(id)!).toList();
+    }
+
+    // Default: solo Claude
+    return [AiPlatformRegistry.defaultPlatform];
+  }
+
+  Future<void> _createDirectoryStructure({
+    required bool minimal,
+    required List<AiPlatformConfig> platforms,
+  }) async {
     _logger.info('Creando estructura de directorios...');
 
     final directories = [
       'specs',
       'specs/features',
-      '.claude/commands',
     ];
+
+    // Agregar carpetas de comandos para cada plataforma
+    for (final platform in platforms) {
+      directories.add(platform.commandFolder);
+    }
 
     if (!minimal) {
       directories.addAll([
@@ -118,14 +188,56 @@ class InitCommand extends Command<int> {
     }
   }
 
-  Future<void> _createConfigFile(String projectName) async {
+  Future<void> _createConfigFile(
+    String projectName,
+    List<AiPlatformConfig> platforms,
+  ) async {
     _logger.info('Creando archivo de configuracion...');
 
     final config = DfspecConfig.defaults(projectName);
     final configPath = FileUtils.resolvePath('dfspec.yaml');
 
-    await FileUtils.writeFile(configPath, config.toYaml(), overwrite: true);
+    // Agregar plataformas al config
+    final configContent = _generateConfigWithPlatforms(config, platforms);
+    await FileUtils.writeFile(configPath, configContent, overwrite: true);
     _logger.item('dfspec.yaml', prefix: '  +');
+  }
+
+  String _generateConfigWithPlatforms(
+    DfspecConfig config,
+    List<AiPlatformConfig> platforms,
+  ) {
+    final buffer = StringBuffer()
+      ..writeln('# DFSpec Configuration')
+      ..writeln('# Generado automaticamente')
+      ..writeln()
+      ..writeln('project:')
+      ..writeln('  name: ${config.projectName}')
+      ..writeln('  configured: true')
+      ..writeln()
+      ..writeln('# Plataformas de IA configuradas')
+      ..writeln('platforms:');
+
+    for (final platform in platforms) {
+      buffer
+        ..writeln('  - id: ${platform.id}')
+        ..writeln('    name: ${platform.name}')
+        ..writeln('    commandFolder: ${platform.commandFolder}');
+    }
+
+    buffer
+      ..writeln()
+      ..writeln('# Features del proyecto')
+      ..writeln('features: {}')
+      ..writeln()
+      ..writeln('# Umbrales de calidad')
+      ..writeln('quality:')
+      ..writeln('  testCoverage: 85')
+      ..writeln('  cyclomaticComplexity: 10')
+      ..writeln('  cognitiveComplexity: 8')
+      ..writeln('  maxLinesPerFile: 400');
+
+    return buffer.toString();
   }
 
   Future<void> _createBaseFiles({required bool minimal}) async {
@@ -152,12 +264,79 @@ class InitCommand extends Command<int> {
       );
       _logger.item('specs/features/ejemplo.spec.md', prefix: '  +');
     }
+  }
 
-    // .gitkeep para .claude/commands
-    await FileUtils.writeFile(
-      FileUtils.resolvePath('.claude/commands/.gitkeep'),
-      '',
-    );
+  Future<void> _createContextFiles(List<AiPlatformConfig> platforms) async {
+    _logger.info('Creando archivos de contexto...');
+
+    for (final platform in platforms) {
+      if (platform.contextFile != null) {
+        final contextPath = FileUtils.resolvePath(platform.contextFile!);
+        final content = _generateContextFile(platform);
+        await FileUtils.writeFile(contextPath, content);
+        _logger.item(platform.contextFile!, prefix: '  +');
+      }
+    }
+  }
+
+  String _generateContextFile(AiPlatformConfig platform) {
+    return '''
+# ${platform.name.toUpperCase()} Instructions
+
+Este archivo proporciona instrucciones a ${platform.name} cuando trabaja con DFSpec.
+
+## Descripcion
+
+DFSpec es un toolkit de Spec-Driven Development (SDD) especializado en Dart/Flutter.
+Transforma especificaciones en implementaciones de alta calidad siguiendo TDD estricto
+y Clean Architecture.
+
+## Comandos Disponibles
+
+| Comando | Uso | Descripcion |
+|---------|-----|-------------|
+| `/df-spec <feature>` | Crear spec | Define QUE construir |
+| `/df-plan <feature>` | Crear plan | Define COMO construir |
+| `/df-implement <feature>` | Implementar | TDD: Red -> Green -> Refactor |
+| `/df-verify <feature>` | Verificar | Valida implementacion vs spec |
+| `/df-status` | Estado | Dashboard del proyecto |
+| `/df-test` | Testing | unit, widget, integration |
+| `/df-review` | Revision | SOLID, Clean Architecture |
+| `/df-security` | Seguridad | OWASP Mobile Top 10 |
+| `/df-performance` | Performance | 60fps, memory leaks |
+| `/df-quality` | Calidad | Complejidad, code smells |
+| `/df-docs` | Documentacion | Effective Dart |
+| `/df-deps` | Dependencias | Dependencias seguras |
+| `/df-orchestrate` | Pipeline | Orquestacion de agentes |
+
+## Principios Obligatorios
+
+### Clean Architecture
+
+```
+lib/src/
+├── domain/          # Entidades, interfaces, usecases
+├── data/            # Models, datasources, repositories impl
+├── presentation/    # Pages, widgets, providers
+└── core/            # Constants, theme, network, utils
+```
+
+### TDD Estricto
+
+1. **RED**: Test que falla primero
+2. **GREEN**: Codigo minimo para pasar
+3. **REFACTOR**: Mejorar sin romper tests
+
+### Umbrales de Calidad
+
+| Metrica | Objetivo |
+|---------|----------|
+| Cobertura tests | >85% |
+| Complejidad ciclomatica | <10 |
+| Complejidad cognitiva | <8 |
+| LOC por archivo | <400 |
+| Frame budget | <16ms |
+''';
   }
 
   static const String _specsReadme = '''
@@ -179,7 +358,7 @@ specs/
 ## Como crear una especificacion
 
 1. Crea un archivo `.spec.md` en el directorio apropiado
-2. Usa el template proporcionado o ejecuta `/df-spec` en Claude Code
+2. Usa el template proporcionado o ejecuta `/df-spec` en tu agente de IA
 3. Define claramente los requisitos y criterios de aceptacion
 
 ## Convenciones
