@@ -264,11 +264,10 @@ Crea y ejecuta tests.
 
     group('invalidateCache', () {
       test('debe limpiar cache', () {
-        // Cargar agente en cache
-        invoker.createInvocation(agentId: 'dfplanner', task: 'test');
-
-        // Invalidar cache
-        invoker.invalidateCache();
+        // Cargar agente en cache e invalidar
+        invoker
+          ..createInvocation(agentId: 'dfplanner', task: 'test')
+          ..invalidateCache();
 
         // Deberia recargar (no hay forma directa de verificar, pero no debe fallar)
         final invocation = invoker.createInvocation(
