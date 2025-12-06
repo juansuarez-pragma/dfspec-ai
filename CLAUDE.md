@@ -4,7 +4,25 @@ Este archivo proporciona instrucciones a Claude Code cuando trabaja con proyecto
 
 ## Descripcion
 
-DFSpec es un toolkit de Spec-Driven Development (SDD) especializado en Dart/Flutter. Transforma especificaciones en implementaciones de alta calidad siguiendo TDD estricto y Clean Architecture.
+DFSpec es un toolkit **multi-agente** de Spec-Driven Development (SDD) especializado en Dart/Flutter. Transforma especificaciones en implementaciones de alta calidad siguiendo TDD estricto y Clean Architecture.
+
+Soporta **17 plataformas de IA** incluyendo Claude Code, Gemini CLI, Cursor, GitHub Copilot, OpenAI Codex, Amazon Q, y mas.
+
+## CLI de DFSpec
+
+```bash
+# Inicializar proyecto
+dfspec init                                   # Solo Claude (default)
+dfspec init --agent claude --agent gemini     # Multiples plataformas
+dfspec init --all-agents                      # Todas las plataformas
+
+# Instalar comandos slash
+dfspec install                                # Plataforma default
+dfspec install --agent gemini                 # Plataforma especifica
+dfspec install --detect                       # Auto-detectar instaladas
+dfspec install --all-agents                   # Todas las plataformas
+dfspec install --list-agents                  # Listar plataformas
+```
 
 ## Comandos Disponibles
 
