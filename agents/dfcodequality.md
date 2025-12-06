@@ -15,6 +15,17 @@ tools:
   - Bash(dart analyze:*)
   - Bash(flutter analyze:*)
   - mcp__dart__analyze_files
+handoffs:
+  - command: df-implement
+    label: Aplicar refactorings
+    description: Simplificar codigo complejo
+    auto: true
+  - command: df-review
+    label: Revisar SOLID
+    description: Verificar principios SOLID
+  - command: df-performance
+    label: Revisar performance
+    description: Verificar impacto en rendimiento
 ---
 
 # Agente dfcodequality - Analista de Calidad Dart/Flutter

@@ -21,6 +21,17 @@ tools:
   - Bash(flutter build:*)
   - mcp__dart__run_tests
   - mcp__dart__analyze_files
+handoffs:
+  - command: df-docs
+    label: Generar documentacion
+    description: Documentar feature verificado
+    auto: true
+  - command: df-implement
+    label: Corregir desvios
+    description: Volver a implementar items pendientes
+  - command: df-security
+    label: Auditoria de seguridad
+    description: Verificar seguridad antes de release
 ---
 
 # Agente dfverifier - Auditor de Completitud Dart/Flutter

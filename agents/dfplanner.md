@@ -17,6 +17,17 @@ tools:
   - WebFetch
   - Task
   - mcp__dart__pub_dev_search
+handoffs:
+  - command: df-implement
+    label: Implementar feature
+    description: Iniciar implementacion TDD siguiendo el plan
+    auto: true
+  - command: df-test
+    label: Crear tests primero
+    description: Generar tests antes de implementar (TDD puro)
+  - command: df-spec
+    label: Refinar especificacion
+    description: Volver a la spec si se necesitan ajustes
 ---
 
 # Agente dfplanner - Arquitecto Investigador Dart/Flutter

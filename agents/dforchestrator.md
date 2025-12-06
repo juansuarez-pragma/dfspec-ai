@@ -23,6 +23,16 @@ tools:
   - mcp__pragma-mcp-server-aws-dev__listPragmaResources
   - mcp__pragma-mcp-server-aws-dev__getPragmaResources
   - mcp__ide__getDiagnostics
+handoffs:
+  - command: df-spec
+    label: Crear especificacion
+    description: Iniciar flujo con especificacion de feature
+  - command: df-status
+    label: Ver estado
+    description: Revisar estado general del proyecto
+  - command: df-verify
+    label: Verificar implementacion
+    description: Auditar implementacion completada
 ---
 
 # Agente dforchestrator - Orquestador Hibrido Central Dart/Flutter

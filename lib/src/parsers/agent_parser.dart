@@ -11,6 +11,54 @@ class AgentParseException implements Exception {
   String toString() => 'AgentParseException: $message';
 }
 
+/// Representa un handoff a otro comando/agente.
+///
+/// Los handoffs permiten sugerir automaticamente el siguiente paso
+/// despues de completar una tarea.
+@immutable
+class AgentHandoff {
+  /// Crea un handoff con los campos requeridos.
+  const AgentHandoff({
+    required this.command,
+    required this.label,
+    this.description,
+    this.auto = false,
+  });
+
+  /// Crea desde un mapa YAML.
+  factory AgentHandoff.fromYaml(Map<dynamic, dynamic> yaml) {
+    return AgentHandoff(
+      command: yaml['command'] as String? ?? '',
+      label: yaml['label'] as String? ?? '',
+      description: yaml['description'] as String?,
+      auto: yaml['auto'] as bool? ?? false,
+    );
+  }
+
+  /// Comando slash destino (ej: /df-plan).
+  final String command;
+
+  /// Etiqueta para mostrar (ej: "Crear plan de implementacion").
+  final String label;
+
+  /// Descripcion opcional del handoff.
+  final String? description;
+
+  /// Si el handoff debe sugerirse automaticamente.
+  final bool auto;
+
+  /// Convierte a mapa.
+  Map<String, dynamic> toJson() => {
+        'command': command,
+        'label': label,
+        if (description != null) 'description': description,
+        'auto': auto,
+      };
+
+  @override
+  String toString() => 'AgentHandoff($command: $label)';
+}
+
 /// Definicion completa de un agente DFSpec.
 ///
 /// Representa un agente parseado desde un archivo .md con YAML frontmatter.
@@ -24,6 +72,7 @@ class AgentDefinition {
     required this.slashCommand,
     this.model,
     this.tools = const [],
+    this.handoffs = const [],
   });
 
   /// Identificador unico del agente (nombre del archivo sin extension).
@@ -41,11 +90,21 @@ class AgentDefinition {
   /// Lista de herramientas permitidas.
   final List<String> tools;
 
+  /// Lista de handoffs a otros comandos.
+  final List<AgentHandoff> handoffs;
+
   /// Contenido completo del agente (sin frontmatter).
   final String content;
 
   /// Comando slash asociado (ej: df-plan).
   final String slashCommand;
+
+  /// Verifica si tiene handoffs definidos.
+  bool get hasHandoffs => handoffs.isNotEmpty;
+
+  /// Obtiene handoffs automaticos.
+  List<AgentHandoff> get autoHandoffs =>
+      handoffs.where((h) => h.auto).toList();
 
   /// Convierte a mapa para serializacion.
   Map<String, dynamic> toJson() {
@@ -55,6 +114,7 @@ class AgentDefinition {
       'description': description,
       if (model != null) 'model': model,
       'tools': tools,
+      if (handoffs.isNotEmpty) 'handoffs': handoffs.map((h) => h.toJson()).toList(),
       'slashCommand': slashCommand,
     };
   }
@@ -213,6 +273,7 @@ class AgentParser {
 
     final model = yaml['model'] as String?;
     final tools = _parseTools(yaml['tools']);
+    final handoffs = _parseHandoffs(yaml['handoffs']);
     final slashCommand = mapAgentNameToSlashCommand(name);
 
     return AgentDefinition(
@@ -221,6 +282,7 @@ class AgentParser {
       description: description,
       model: model,
       tools: tools,
+      handoffs: handoffs,
       content: bodyContent.trim(),
       slashCommand: slashCommand,
     );
@@ -279,6 +341,22 @@ class AgentParser {
     }
     if (value is List) {
       return value.map((e) => e.toString()).toList();
+    }
+    return [];
+  }
+
+  /// Parsea la lista de handoffs del YAML.
+  List<AgentHandoff> _parseHandoffs(dynamic value) {
+    if (value == null) return [];
+    if (value is YamlList) {
+      return value
+          .map((e) => AgentHandoff.fromYaml(e as Map<dynamic, dynamic>))
+          .toList();
+    }
+    if (value is List) {
+      return value
+          .map((e) => AgentHandoff.fromYaml(e as Map<dynamic, dynamic>))
+          .toList();
     }
     return [];
   }

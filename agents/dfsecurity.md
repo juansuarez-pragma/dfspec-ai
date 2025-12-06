@@ -14,6 +14,17 @@ tools:
   - Glob
   - Grep
   - WebSearch
+handoffs:
+  - command: df-implement
+    label: Corregir vulnerabilidades
+    description: Implementar fixes de seguridad
+    auto: true
+  - command: df-deps
+    label: Auditar dependencias
+    description: Verificar dependencias por vulnerabilidades conocidas
+  - command: df-verify
+    label: Verificar correcciones
+    description: Validar que fixes fueron aplicados correctamente
 ---
 
 # Agente dfsecurity - Guardian de Seguridad Dart/Flutter

@@ -15,6 +15,14 @@ tools:
   - Glob
   - Grep
   - WebSearch
+handoffs:
+  - command: df-plan
+    label: Crear plan de implementacion
+    description: Genera arquitectura y orden TDD desde la especificacion
+    auto: true
+  - command: df-status
+    label: Ver estado del proyecto
+    description: Verificar estado general del proyecto
 ---
 
 # Agente dfspec - Especialista en Especificaciones SDD

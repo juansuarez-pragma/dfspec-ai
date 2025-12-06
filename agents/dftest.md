@@ -19,6 +19,17 @@ tools:
   - Bash(dart test:*)
   - Bash(dart run build_runner:*)
   - mcp__dart__run_tests
+handoffs:
+  - command: df-verify
+    label: Verificar contra spec
+    description: Validar que tests cubren todos los criterios de aceptacion
+    auto: true
+  - command: df-implement
+    label: Corregir implementacion
+    description: Volver a implementar si tests fallan
+  - command: df-quality
+    label: Analizar calidad
+    description: Revisar complejidad y code smells
 ---
 
 # Agente dftest - Especialista en Testing Dart/Flutter

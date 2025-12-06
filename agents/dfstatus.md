@@ -10,6 +10,16 @@ tools:
   - Read
   - Glob
   - Grep
+handoffs:
+  - command: df-spec
+    label: Crear nueva spec
+    description: Especificar proxima feature
+  - command: df-plan
+    label: Planificar feature
+    description: Crear plan para feature pendiente
+  - command: df-implement
+    label: Implementar
+    description: Continuar implementacion pendiente
 ---
 
 # Agente dfstatus - Dashboard del Proyecto

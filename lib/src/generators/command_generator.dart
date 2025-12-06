@@ -14,6 +14,7 @@ class CommandTemplate {
     required this.description,
     required this.tools,
     required this.content,
+    this.handoffs = const [],
   });
 
   /// Crea un template desde una definicion de agente.
@@ -23,6 +24,7 @@ class CommandTemplate {
       description: agent.description,
       tools: agent.tools,
       content: agent.content,
+      handoffs: agent.handoffs,
     );
   }
 
@@ -37,6 +39,12 @@ class CommandTemplate {
 
   /// Contenido/prompt del comando.
   final String content;
+
+  /// Lista de handoffs a otros comandos.
+  final List<AgentHandoff> handoffs;
+
+  /// Verifica si tiene handoffs definidos.
+  bool get hasHandoffs => handoffs.isNotEmpty;
 }
 
 /// Generador de comandos slash para Claude Code.
@@ -52,6 +60,9 @@ class CommandTemplate {
 /// ---
 ///
 /// [Contenido del comando]
+///
+/// ## Handoffs
+/// - /df-plan: Crear plan de implementacion
 /// ```
 ///
 /// Ejemplo:
@@ -62,6 +73,7 @@ class CommandTemplate {
 ///   description: 'Genera plan de implementacion',
 ///   tools: ['Read', 'Glob', 'WebSearch'],
 ///   content: '# Agente dfplanner\n...',
+///   handoffs: [AgentHandoff(command: '/df-implement', label: 'Implementar')],
 /// );
 /// final content = generator.generate(template);
 /// ```
@@ -83,6 +95,34 @@ class ClaudeCommandGenerator {
       ..write(frontmatter)
       ..writeln()
       ..write(template.content);
+
+    // Agregar seccion de handoffs si existen
+    if (template.hasHandoffs) {
+      buffer
+        ..writeln()
+        ..writeln()
+        ..write(_generateHandoffsSection(template.handoffs));
+    }
+
+    return buffer.toString();
+  }
+
+  /// Genera la seccion de handoffs en formato Markdown.
+  String _generateHandoffsSection(List<AgentHandoff> handoffs) {
+    final buffer = StringBuffer()
+      ..writeln('## Siguientes Pasos Sugeridos')
+      ..writeln()
+      ..writeln('Al completar esta tarea, considera ejecutar:')
+      ..writeln();
+
+    for (final handoff in handoffs) {
+      final autoPrefix = handoff.auto ? '**[AUTO]** ' : '';
+      buffer.write('- $autoPrefix`/${handoff.command}`: ${handoff.label}');
+      if (handoff.description != null && handoff.description!.isNotEmpty) {
+        buffer.write(' - ${handoff.description}');
+      }
+      buffer.writeln();
+    }
 
     return buffer.toString();
   }

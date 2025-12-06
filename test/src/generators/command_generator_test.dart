@@ -53,6 +53,40 @@ void main() {
 
       expect(template.tools, isEmpty);
     });
+
+    test('fromAgent debe incluir handoffs', () {
+      const handoffs = [
+        AgentHandoff(command: 'df-plan', label: 'Crear plan', auto: true),
+        AgentHandoff(command: 'df-test', label: 'Ejecutar tests'),
+      ];
+
+      const agent = AgentDefinition(
+        id: 'dfspec',
+        name: 'dfspec',
+        description: 'Crea especificaciones',
+        content: '# Agente dfspec',
+        slashCommand: 'df-spec',
+        handoffs: handoffs,
+      );
+
+      final template = CommandTemplate.fromAgent(agent);
+
+      expect(template.handoffs.length, equals(2));
+      expect(template.hasHandoffs, isTrue);
+      expect(template.handoffs[0].command, equals('df-plan'));
+      expect(template.handoffs[1].command, equals('df-test'));
+    });
+
+    test('hasHandoffs debe retornar false si no hay handoffs', () {
+      const template = CommandTemplate(
+        name: 'df-test',
+        description: 'Test',
+        tools: [],
+        content: 'Contenido',
+      );
+
+      expect(template.hasHandoffs, isFalse);
+    });
   });
 
   group('ClaudeCommandGenerator', () {
@@ -158,6 +192,93 @@ Linea 3''',
         output,
         contains('description: Descripcion: con dos puntos y "comillas"'),
       );
+    });
+
+    test('debe incluir seccion de handoffs cuando existen', () {
+      const handoffs = [
+        AgentHandoff(
+          command: 'df-plan',
+          label: 'Crear plan',
+          description: 'Genera arquitectura',
+          auto: true,
+        ),
+        AgentHandoff(
+          command: 'df-test',
+          label: 'Ejecutar tests',
+        ),
+      ];
+
+      const template = CommandTemplate(
+        name: 'df-spec',
+        description: 'Crea especificaciones',
+        tools: ['Read', 'Write'],
+        content: '# Contenido',
+        handoffs: handoffs,
+      );
+
+      final output = generator.generate(template);
+
+      expect(output, contains('## Siguientes Pasos Sugeridos'));
+      expect(output, contains('Al completar esta tarea, considera ejecutar:'));
+      expect(output, contains('**[AUTO]** `/df-plan`: Crear plan'));
+      expect(output, contains('Genera arquitectura'));
+      expect(output, contains('`/df-test`: Ejecutar tests'));
+    });
+
+    test('no debe incluir seccion de handoffs si no hay', () {
+      const template = CommandTemplate(
+        name: 'df-test',
+        description: 'Test',
+        tools: ['Read'],
+        content: '# Contenido',
+      );
+
+      final output = generator.generate(template);
+
+      expect(output, isNot(contains('## Siguientes Pasos Sugeridos')));
+    });
+
+    test('debe formatear handoff sin descripcion', () {
+      const handoffs = [
+        AgentHandoff(
+          command: 'df-status',
+          label: 'Ver estado',
+        ),
+      ];
+
+      const template = CommandTemplate(
+        name: 'df-spec',
+        description: 'Spec',
+        tools: [],
+        content: '# Content',
+        handoffs: handoffs,
+      );
+
+      final output = generator.generate(template);
+
+      expect(output, contains('`/df-status`: Ver estado'));
+      // No debe tener el " - " seguido de descripcion
+      expect(output, isNot(contains('Ver estado - ')));
+    });
+
+    test('debe marcar handoffs automaticos con [AUTO]', () {
+      const handoffs = [
+        AgentHandoff(command: 'df-plan', label: 'Plan', auto: true),
+        AgentHandoff(command: 'df-test', label: 'Test'),
+      ];
+
+      const template = CommandTemplate(
+        name: 'df-spec',
+        description: 'Spec',
+        tools: [],
+        content: '# Content',
+        handoffs: handoffs,
+      );
+
+      final output = generator.generate(template);
+
+      expect(output, contains('**[AUTO]** `/df-plan`'));
+      expect(output, isNot(contains('**[AUTO]** `/df-test`')));
     });
   });
 }

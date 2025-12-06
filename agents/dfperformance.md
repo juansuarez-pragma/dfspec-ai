@@ -15,6 +15,17 @@ tools:
   - Grep
   - Bash(dart analyze:*)
   - Bash(flutter analyze:*)
+handoffs:
+  - command: df-implement
+    label: Aplicar optimizaciones
+    description: Implementar mejoras de performance sugeridas
+    auto: true
+  - command: df-review
+    label: Revisar arquitectura
+    description: Verificar que optimizaciones mantengan SOLID
+  - command: df-test
+    label: Crear benchmarks
+    description: Agregar tests de performance
 ---
 
 # Agente dfperformance - Auditor de Performance Dart/Flutter

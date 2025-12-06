@@ -2,6 +2,89 @@ import 'package:dfspec/src/parsers/agent_parser.dart';
 import 'package:test/test.dart';
 
 void main() {
+  group('AgentHandoff', () {
+    test('debe crear instancia con todos los campos', () {
+      const handoff = AgentHandoff(
+        command: 'df-plan',
+        label: 'Crear plan',
+        description: 'Genera plan de implementacion',
+        auto: true,
+      );
+
+      expect(handoff.command, equals('df-plan'));
+      expect(handoff.label, equals('Crear plan'));
+      expect(handoff.description, equals('Genera plan de implementacion'));
+      expect(handoff.auto, isTrue);
+    });
+
+    test('debe tener auto como false por defecto', () {
+      const handoff = AgentHandoff(
+        command: 'df-test',
+        label: 'Ejecutar tests',
+      );
+
+      expect(handoff.auto, isFalse);
+      expect(handoff.description, isNull);
+    });
+
+    test('debe crear desde mapa YAML', () {
+      final yaml = <dynamic, dynamic>{
+        'command': 'df-implement',
+        'label': 'Implementar',
+        'description': 'Iniciar TDD',
+        'auto': true,
+      };
+
+      final handoff = AgentHandoff.fromYaml(yaml);
+
+      expect(handoff.command, equals('df-implement'));
+      expect(handoff.label, equals('Implementar'));
+      expect(handoff.description, equals('Iniciar TDD'));
+      expect(handoff.auto, isTrue);
+    });
+
+    test('debe manejar valores faltantes en fromYaml', () {
+      final yaml = <dynamic, dynamic>{
+        'command': 'df-test',
+        'label': 'Test',
+      };
+
+      final handoff = AgentHandoff.fromYaml(yaml);
+
+      expect(handoff.command, equals('df-test'));
+      expect(handoff.label, equals('Test'));
+      expect(handoff.description, isNull);
+      expect(handoff.auto, isFalse);
+    });
+
+    test('debe convertir a JSON correctamente', () {
+      const handoff = AgentHandoff(
+        command: 'df-verify',
+        label: 'Verificar',
+        description: 'Validar implementacion',
+        auto: true,
+      );
+
+      final json = handoff.toJson();
+
+      expect(json['command'], equals('df-verify'));
+      expect(json['label'], equals('Verificar'));
+      expect(json['description'], equals('Validar implementacion'));
+      expect(json['auto'], isTrue);
+    });
+
+    test('debe omitir description null en toJson', () {
+      const handoff = AgentHandoff(
+        command: 'df-test',
+        label: 'Test',
+      );
+
+      final json = handoff.toJson();
+
+      expect(json.containsKey('description'), isFalse);
+    });
+  });
+
   group('AgentDefinition', () {
     test('debe crear instancia con todos los campos requeridos', () {
       const agent = AgentDefinition(
@@ -34,6 +117,61 @@ void main() {
 
       expect(agent.model, isNull);
       expect(agent.tools, isEmpty);
+      expect(agent.handoffs, isEmpty);
+    });
+
+    test('debe crear instancia con handoffs', () {
+      const handoffs = [
+        AgentHandoff(command: 'df-plan', label: 'Plan', auto: true),
+        AgentHandoff(command: 'df-test', label: 'Test'),
+      ];
+
+      const agent = AgentDefinition(
+        id: 'dfspec',
+        name: 'dfspec',
+        description: 'Spec agent',
+        content: 'Content',
+        slashCommand: 'df-spec',
+        handoffs: handoffs,
+      );
+
+      expect(agent.handoffs.length, equals(2));
+      expect(agent.hasHandoffs, isTrue);
+    });
+
+    test('hasHandoffs debe retornar false si no hay handoffs', () {
+      const agent = AgentDefinition(
+        id: 'test',
+        name: 'test',
+        description: 'Test',
+        content: 'Content',
+        slashCommand: 'df-test',
+      );
+
+      expect(agent.hasHandoffs, isFalse);
+    });
+
+    test('autoHandoffs debe filtrar solo handoffs automaticos', () {
+      const handoffs = [
+        AgentHandoff(command: 'df-plan', label: 'Plan', auto: true),
+        AgentHandoff(command: 'df-test', label: 'Test'),
+        AgentHandoff(command: 'df-verify', label: 'Verify', auto: true),
+      ];
+
+      const agent = AgentDefinition(
+        id: 'dfspec',
+        name: 'dfspec',
+        description: 'Spec agent',
+        content: 'Content',
+        slashCommand: 'df-spec',
+        handoffs: handoffs,
+      );
+
+      final autoHandoffs = agent.autoHandoffs;
+
+      expect(autoHandoffs.length, equals(2));
+      expect(autoHandoffs[0].command, equals('df-plan'));
+      expect(autoHandoffs[1].command, equals('df-verify'));
     });
 
     test('debe serializar a JSON correctamente', () {
@@ -214,6 +352,64 @@ name: test
           () => parser.parse(markdown, 'test'),
           throwsA(isA<AgentParseException>()),
         );
+      });
+
+      test('debe parsear agente con handoffs', () {
+        const markdown = '''
+---
+name: dfspec
+description: Especialista en especificaciones
+model: opus
+tools:
+  - Read
+  - Write
+handoffs:
+  - command: df-plan
+    label: Crear plan de implementacion
+    description: Genera arquitectura y orden TDD
+    auto: true
+  - command: df-status
+    label: Ver estado
+---
+
+# Content
+''';
+
+        final agent = parser.parse(markdown, 'dfspec');
+
+        expect(agent.handoffs.length, equals(2));
+        expect(agent.hasHandoffs, isTrue);
+
+        final firstHandoff = agent.handoffs[0];
+        expect(firstHandoff.command, equals('df-plan'));
+        expect(firstHandoff.label, equals('Crear plan de implementacion'));
+        expect(firstHandoff.description, equals('Genera arquitectura y orden TDD'));
+        expect(firstHandoff.auto, isTrue);
+
+        final secondHandoff = agent.handoffs[1];
+        expect(secondHandoff.command, equals('df-status'));
+        expect(secondHandoff.label, equals('Ver estado'));
+        expect(secondHandoff.description, isNull);
+        expect(secondHandoff.auto, isFalse);
+      });
+
+      test('debe manejar agente sin handoffs', () {
+        const markdown = '''
+---
+name: dftest
+description: Testing agent
+model: opus
+tools:
+  - Read
+---
+
+# Content
+''';
+
+        final agent = parser.parse(markdown, 'dftest');
+
+        expect(agent.handoffs, isEmpty);
+        expect(agent.hasHandoffs, isFalse);
       });
     });
 

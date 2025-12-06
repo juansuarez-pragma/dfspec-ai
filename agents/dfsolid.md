@@ -13,6 +13,17 @@ tools:
   - Read
   - Glob
   - Grep
+handoffs:
+  - command: df-implement
+    label: Aplicar refactorings
+    description: Implementar los refactorings sugeridos
+    auto: true
+  - command: df-quality
+    label: Analisis de complejidad
+    description: Complementar con metricas de complejidad
+  - command: df-security
+    label: Revision de seguridad
+    description: Verificar seguridad del codigo
 ---
 
 # Agente dfsolid - Guardian de Calidad Dart/Flutter

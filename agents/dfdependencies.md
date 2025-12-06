@@ -18,6 +18,17 @@ tools:
   - Bash(dart pub outdated:*)
   - Bash(dart pub deps:*)
   - Bash(flutter pub outdated:*)
+handoffs:
+  - command: df-security
+    label: Auditoria de seguridad
+    description: Verificar vulnerabilidades conocidas
+    auto: true
+  - command: df-implement
+    label: Actualizar dependencias
+    description: Aplicar actualizaciones seguras
+  - command: df-test
+    label: Verificar compatibilidad
+    description: Correr tests tras actualizar
 ---
 
 # Agente dfdependencies - Guardian de Dependencias Dart/Flutter

@@ -24,6 +24,17 @@ tools:
   - mcp__dart__run_tests
   - mcp__dart__analyze_files
   - mcp__dart__dart_format
+handoffs:
+  - command: df-test
+    label: Verificar tests
+    description: Ejecutar suite completa de tests
+    auto: true
+  - command: df-review
+    label: Revisar codigo
+    description: Analizar SOLID y Clean Architecture
+  - command: df-verify
+    label: Verificar implementacion
+    description: Validar implementacion contra especificacion
 ---
 
 # Agente dfimplementer - Desarrollador TDD Dart/Flutter

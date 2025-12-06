@@ -14,6 +14,14 @@ tools:
   - Grep
   - Bash(dart doc:*)
   - Bash(dart analyze:*)
+handoffs:
+  - command: df-implement
+    label: Aplicar documentacion
+    description: Agregar doc comments sugeridos
+    auto: true
+  - command: df-status
+    label: Ver estado del proyecto
+    description: Revisar estado general del proyecto
 ---
 
 # Agente dfdocumentation - Especialista en Documentacion Dart/Flutter
