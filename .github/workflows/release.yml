@@ -1,0 +1,94 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: Create Release
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: dart-lang/setup-dart@v1
+        with:
+          sdk: stable
+
+      - name: Install dependencies
+        run: dart pub get
+
+      - name: Run tests
+        run: dart test
+
+      - name: Get version from tag
+        id: get_version
+        run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
+
+      - name: Verify version matches pubspec
+        run: |
+          PUBSPEC_VERSION=$(grep '^version:' pubspec.yaml | cut -d' ' -f2)
+          TAG_VERSION="${{ steps.get_version.outputs.VERSION }}"
+          if [ "$PUBSPEC_VERSION" != "$TAG_VERSION" ]; then
+            echo "Version mismatch: pubspec.yaml=$PUBSPEC_VERSION, tag=$TAG_VERSION"
+            exit 1
+          fi
+
+      - name: Build Linux binary
+        run: dart compile exe bin/dfspec.dart -o dfspec-linux
+
+      - name: Build macOS binary
+        if: runner.os == 'Linux'
+        run: |
+          # Cross-compilation not supported, skip
+          echo "macOS build skipped (requires macOS runner)"
+
+      - name: Generate changelog
+        id: changelog
+        run: |
+          # Get commits since last tag
+          LAST_TAG=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "")
+          if [ -n "$LAST_TAG" ]; then
+            CHANGES=$(git log $LAST_TAG..HEAD --pretty=format:"- %s" --no-merges)
+          else
+            CHANGES=$(git log --pretty=format:"- %s" --no-merges -20)
+          fi
+          echo "CHANGES<<EOF" >> $GITHUB_OUTPUT
+          echo "$CHANGES" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          name: DFSpec v${{ steps.get_version.outputs.VERSION }}
+          body: |
+            ## What's Changed
+            ${{ steps.changelog.outputs.CHANGES }}
+
+            ## Installation
+
+            ```bash
+            # From source
+            git clone https://github.com/juansuarez-pragma/dfspec-ai.git
+            cd dfspec-ai
+            dart pub global activate --source path .
+
+            # Or download binary
+            chmod +x dfspec-linux
+            ./dfspec-linux --help
+            ```
+
+            ## Full Changelog
+            https://github.com/juansuarez-pragma/dfspec-ai/compare/${{ env.LAST_TAG }}...v${{ steps.get_version.outputs.VERSION }}
+          files: |
+            dfspec-linux
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

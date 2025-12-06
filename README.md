@@ -2,11 +2,12 @@
 
 **Spec-Driven Development para Dart/Flutter con Claude Code**
 
+[![CI](https://github.com/juansuarez-pragma/dfspec-ai/actions/workflows/ci.yml/badge.svg)](https://github.com/juansuarez-pragma/dfspec-ai/actions/workflows/ci.yml)
+[![codecov](https://codecov.io/gh/juansuarez-pragma/dfspec-ai/branch/main/graph/badge.svg)](https://codecov.io/gh/juansuarez-pragma/dfspec-ai)
 [![Dart](https://img.shields.io/badge/Dart-%5E3.10.1-blue)](https://dart.dev)
 [![Flutter](https://img.shields.io/badge/Flutter-Compatible-02569B)](https://flutter.dev)
 [![License](https://img.shields.io/badge/License-MIT-green)](LICENSE)
 [![Claude Code](https://img.shields.io/badge/Claude%20Code-Optimizado-purple)](https://claude.ai/code)
-[![Tests](https://img.shields.io/badge/Tests-217%20Passing-brightgreen)](test/)
 
 DFSpec es un toolkit que implementa **Spec-Driven Development (SDD)** especializado para proyectos Dart y Flutter. Transforma especificaciones en implementaciones de alta calidad siguiendo TDD estricto y Clean Architecture.
 
