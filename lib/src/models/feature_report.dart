@@ -67,6 +67,34 @@ class FeatureComponent {
     this.hasDocumentation = false,
   });
 
+  /// Crea desde JSON.
+  factory FeatureComponent.fromJson(Map<String, dynamic> json) {
+    return FeatureComponent(
+      name: json['name'] as String,
+      layer: ArchitectureLayer.values.firstWhere(
+        (l) => l.id == json['layer'],
+        orElse: () => ArchitectureLayer.domain,
+      ),
+      type: ComponentType.values.firstWhere(
+        (t) => t.id == json['type'],
+        orElse: () => ComponentType.other,
+      ),
+      status: ComponentStatus.values.firstWhere(
+        (s) => s.id == json['status'],
+        orElse: () => ComponentStatus.pending,
+      ),
+      tddPhase: json['tdd_phase'] != null
+          ? TddPhase.values.firstWhere((p) => p.id == json['tdd_phase'])
+          : null,
+      filePath: json['file_path'] as String?,
+      testPath: json['test_path'] as String?,
+      coverage: (json['coverage'] as num?)?.toDouble(),
+      complexity: json['complexity'] as int?,
+      linesOfCode: json['lines_of_code'] as int?,
+      hasDocumentation: json['has_documentation'] as bool? ?? false,
+    );
+  }
+
   /// Nombre del componente.
   final String name;
 
@@ -103,34 +131,6 @@ class FeatureComponent {
   /// Si está completo (implementado y testeado).
   bool get isComplete =>
       status == ComponentStatus.complete && (coverage ?? 0) >= 0.8;
-
-  /// Crea desde JSON.
-  factory FeatureComponent.fromJson(Map<String, dynamic> json) {
-    return FeatureComponent(
-      name: json['name'] as String,
-      layer: ArchitectureLayer.values.firstWhere(
-        (l) => l.id == json['layer'],
-        orElse: () => ArchitectureLayer.domain,
-      ),
-      type: ComponentType.values.firstWhere(
-        (t) => t.id == json['type'],
-        orElse: () => ComponentType.other,
-      ),
-      status: ComponentStatus.values.firstWhere(
-        (s) => s.id == json['status'],
-        orElse: () => ComponentStatus.pending,
-      ),
-      tddPhase: json['tdd_phase'] != null
-          ? TddPhase.values.firstWhere((p) => p.id == json['tdd_phase'])
-          : null,
-      filePath: json['file_path'] as String?,
-      testPath: json['test_path'] as String?,
-      coverage: (json['coverage'] as num?)?.toDouble(),
-      complexity: json['complexity'] as int?,
-      linesOfCode: json['lines_of_code'] as int?,
-      hasDocumentation: json['has_documentation'] as bool? ?? false,
-    );
-  }
 
   /// Convierte a JSON.
   Map<String, dynamic> toJson() => {
@@ -241,44 +241,6 @@ class FeatureMetrics {
     this.documentedPercentage = 0.0,
   });
 
-  /// Total de componentes.
-  final int totalComponents;
-
-  /// Componentes completados.
-  final int completedComponents;
-
-  /// Total de tests.
-  final int totalTests;
-
-  /// Tests pasando.
-  final int passingTests;
-
-  /// Cobertura de código.
-  final double coverage;
-
-  /// Complejidad promedio.
-  final double averageComplexity;
-
-  /// Total de líneas de código.
-  final int totalLinesOfCode;
-
-  /// Porcentaje documentado.
-  final double documentedPercentage;
-
-  /// Progreso de implementación (0.0 - 1.0).
-  double get progress =>
-      totalComponents > 0 ? completedComponents / totalComponents : 0.0;
-
-  /// Tasa de éxito de tests (0.0 - 1.0).
-  double get testSuccessRate =>
-      totalTests > 0 ? passingTests / totalTests : 1.0;
-
-  /// Si cumple los umbrales de calidad.
-  bool get meetsQualityThresholds =>
-      coverage >= 0.85 &&
-      averageComplexity <= 10 &&
-      documentedPercentage >= 0.8;
-
   /// Calcula métricas desde componentes.
   factory FeatureMetrics.fromComponents(List<FeatureComponent> components) {
     if (components.isEmpty) return const FeatureMetrics();
@@ -334,6 +296,44 @@ class FeatureMetrics {
     );
   }
 
+  /// Total de componentes.
+  final int totalComponents;
+
+  /// Componentes completados.
+  final int completedComponents;
+
+  /// Total de tests.
+  final int totalTests;
+
+  /// Tests pasando.
+  final int passingTests;
+
+  /// Cobertura de código.
+  final double coverage;
+
+  /// Complejidad promedio.
+  final double averageComplexity;
+
+  /// Total de líneas de código.
+  final int totalLinesOfCode;
+
+  /// Porcentaje documentado.
+  final double documentedPercentage;
+
+  /// Progreso de implementación (0.0 - 1.0).
+  double get progress =>
+      totalComponents > 0 ? completedComponents / totalComponents : 0.0;
+
+  /// Tasa de éxito de tests (0.0 - 1.0).
+  double get testSuccessRate =>
+      totalTests > 0 ? passingTests / totalTests : 1.0;
+
+  /// Si cumple los umbrales de calidad.
+  bool get meetsQualityThresholds =>
+      coverage >= 0.85 &&
+      averageComplexity <= 10 &&
+      documentedPercentage >= 0.8;
+
   /// Convierte a JSON.
   Map<String, dynamic> toJson() => {
         'total_components': totalComponents,
@@ -367,6 +367,35 @@ class FeatureReport {
     this.issues = const [],
     this.recommendations = const [],
   });
+
+  /// Crea desde JSON.
+  factory FeatureReport.fromJson(Map<String, dynamic> json) {
+    return FeatureReport(
+      featureName: json['feature_name'] as String,
+      status: FeatureStatus.values.firstWhere(
+        (s) => s.id == json['status'],
+        orElse: () => FeatureStatus.planned,
+      ),
+      components: (json['components'] as List?)
+              ?.map((c) => FeatureComponent.fromJson(c as Map<String, dynamic>))
+              .toList() ??
+          [],
+      metrics: json['metrics'] != null
+          ? FeatureMetrics.fromJson(json['metrics'] as Map<String, dynamic>)
+          : const FeatureMetrics(),
+      generatedAt: DateTime.parse(json['generated_at'] as String),
+      description: json['description'] as String?,
+      specPath: json['spec_path'] as String?,
+      planPath: json['plan_path'] as String?,
+      issues: (json['issues'] as List?)
+              ?.map((i) => FeatureIssue.fromJson(i as Map<String, dynamic>))
+              .toList() ??
+          [],
+      recommendations: List<String>.from(
+        (json['recommendations'] as List?) ?? [],
+      ),
+    );
+  }
 
   /// Nombre de la feature.
   final String featureName;
@@ -511,33 +540,6 @@ class FeatureReport {
     return '🔴';
   }
 
-  /// Crea desde JSON.
-  factory FeatureReport.fromJson(Map<String, dynamic> json) {
-    return FeatureReport(
-      featureName: json['feature_name'] as String,
-      status: FeatureStatus.values.firstWhere(
-        (s) => s.id == json['status'],
-        orElse: () => FeatureStatus.planned,
-      ),
-      components: (json['components'] as List?)
-              ?.map((c) => FeatureComponent.fromJson(c as Map<String, dynamic>))
-              .toList() ??
-          [],
-      metrics: json['metrics'] != null
-          ? FeatureMetrics.fromJson(json['metrics'] as Map<String, dynamic>)
-          : const FeatureMetrics(),
-      generatedAt: DateTime.parse(json['generated_at'] as String),
-      description: json['description'] as String?,
-      specPath: json['spec_path'] as String?,
-      planPath: json['plan_path'] as String?,
-      issues: (json['issues'] as List?)
-              ?.map((i) => FeatureIssue.fromJson(i as Map<String, dynamic>))
-              .toList() ??
-          [],
-      recommendations: List<String>.from(json['recommendations'] ?? []),
-    );
-  }
-
   /// Convierte a JSON.
   Map<String, dynamic> toJson() => {
         'feature_name': featureName,
@@ -570,24 +572,6 @@ class FeatureIssue {
     this.line,
   });
 
-  /// Título del issue.
-  final String title;
-
-  /// Descripción detallada.
-  final String description;
-
-  /// Severidad.
-  final IssueSeverity severity;
-
-  /// Categoría.
-  final IssueCategory category;
-
-  /// Archivo relacionado.
-  final String? filePath;
-
-  /// Línea del archivo.
-  final int? line;
-
   /// Crea desde JSON.
   factory FeatureIssue.fromJson(Map<String, dynamic> json) {
     return FeatureIssue(
@@ -605,6 +589,24 @@ class FeatureIssue {
       line: json['line'] as int?,
     );
   }
+
+  /// Título del issue.
+  final String title;
+
+  /// Descripción detallada.
+  final String description;
+
+  /// Severidad.
+  final IssueSeverity severity;
+
+  /// Categoría.
+  final IssueCategory category;
+
+  /// Archivo relacionado.
+  final String? filePath;
+
+  /// Línea del archivo.
+  final int? line;
 
   /// Convierte a JSON.
   Map<String, dynamic> toJson() => {
@@ -673,6 +675,18 @@ class ProjectReport {
     this.version,
   });
 
+  /// Crea desde JSON.
+  factory ProjectReport.fromJson(Map<String, dynamic> json) {
+    return ProjectReport(
+      projectName: json['project_name'] as String,
+      features: (json['features'] as List)
+          .map((f) => FeatureReport.fromJson(f as Map<String, dynamic>))
+          .toList(),
+      generatedAt: DateTime.parse(json['generated_at'] as String),
+      version: json['version'] as String?,
+    );
+  }
+
   /// Nombre del proyecto.
   final String projectName;
 
@@ -698,7 +712,7 @@ class ProjectReport {
 
   /// Cobertura promedio.
   double get averageCoverage {
-    if (features.isEmpty) return 0.0;
+    if (features.isEmpty) return 0;
     return features.map((f) => f.metrics.coverage).reduce((a, b) => a + b) /
         features.length;
   }
@@ -749,18 +763,6 @@ class ProjectReport {
     }
 
     return buffer.toString();
-  }
-
-  /// Crea desde JSON.
-  factory ProjectReport.fromJson(Map<String, dynamic> json) {
-    return ProjectReport(
-      projectName: json['project_name'] as String,
-      features: (json['features'] as List)
-          .map((f) => FeatureReport.fromJson(f as Map<String, dynamic>))
-          .toList(),
-      generatedAt: DateTime.parse(json['generated_at'] as String),
-      version: json['version'] as String?,
-    );
   }
 
   /// Convierte a JSON.

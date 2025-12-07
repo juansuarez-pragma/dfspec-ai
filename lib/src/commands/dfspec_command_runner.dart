@@ -1,8 +1,16 @@
 import 'package:args/command_runner.dart';
 import 'package:dfspec/src/commands/agents_command.dart';
+import 'package:dfspec/src/commands/cache_command.dart';
+import 'package:dfspec/src/commands/context_command.dart';
+import 'package:dfspec/src/commands/docs_command.dart';
 import 'package:dfspec/src/commands/generate_command.dart';
 import 'package:dfspec/src/commands/init_command.dart';
 import 'package:dfspec/src/commands/install_command.dart';
+import 'package:dfspec/src/commands/quality_command.dart';
+import 'package:dfspec/src/commands/recovery_command.dart';
+import 'package:dfspec/src/commands/report_command.dart';
+import 'package:dfspec/src/commands/trace_command.dart';
+import 'package:dfspec/src/commands/verify_command.dart';
 
 /// CommandRunner principal para DFSpec CLI.
 ///
@@ -11,6 +19,14 @@ import 'package:dfspec/src/commands/install_command.dart';
 /// - install: Instala comandos slash en .claude/commands/
 /// - generate: Genera especificaciones desde templates
 /// - agents: Lista y muestra informacion de agentes
+/// - verify: Verifica quality gates constitucionales
+/// - quality: Analiza metricas de calidad
+/// - report: Genera reportes de features/proyecto
+/// - docs: Gestiona documentacion
+/// - cache: Gestiona cache de analisis
+/// - recovery: Gestiona puntos de recuperacion
+/// - context: Detecta contexto del proyecto y feature actual
+/// - trace: Genera matriz de trazabilidad y analiza consistencia
 class DfspecCommandRunner extends CommandRunner<int> {
   /// Crea una nueva instancia del CommandRunner.
   DfspecCommandRunner()
@@ -28,11 +44,23 @@ class DfspecCommandRunner extends CommandRunner<int> {
       help: 'Muestra la version de DFSpec.',
     );
 
-    // Comandos disponibles
-    addCommand(AgentsCommand());
-    addCommand(GenerateCommand());
+    // Comandos principales
     addCommand(InitCommand());
     addCommand(InstallCommand());
+    addCommand(GenerateCommand());
+    addCommand(AgentsCommand());
+    addCommand(ContextCommand());
+
+    // Comandos de verificacion y calidad
+    addCommand(VerifyCommand());
+    addCommand(QualityCommand());
+    addCommand(ReportCommand());
+    addCommand(TraceCommand());
+
+    // Comandos de documentacion y utilidades
+    addCommand(DocsCommand());
+    addCommand(CacheCommand());
+    addCommand(RecoveryCommand());
   }
 
   @override

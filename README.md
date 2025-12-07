@@ -68,7 +68,7 @@ dfspec-ia/
 │   ├── invokers/             # Invocacion multi-agente con modelos
 │   ├── generators/           # Genera comandos Markdown
 │   └── commands/             # CLI commands
-└── test/                     # 217+ tests
+└── test/                     # 899+ tests
 ```
 
 ### Flujo de Datos
@@ -157,13 +157,33 @@ tu-proyecto-flutter/
 ### Comandos CLI
 
 ```bash
+# Inicialización y configuración
 dfspec init [nombre]           # Inicializar proyecto
 dfspec install                 # Instalar comandos esenciales
 dfspec install --all           # Instalar todos los comandos
 dfspec install --list          # Listar comandos disponibles
 dfspec install --force         # Sobrescribir existentes
+
+# Agentes
 dfspec agents                  # Listar agentes disponibles
 dfspec agents --info=dftest    # Ver detalles de un agente
+
+# Contexto
+dfspec context                 # Mostrar contexto del proyecto
+dfspec context --json          # Salida JSON estructurada
+dfspec context check           # Verificar prerequisitos
+dfspec context validate        # Validar spec con score 0-100
+dfspec context next            # Siguiente número de feature
+
+# Trazabilidad
+dfspec trace <feature>         # Analizar trazabilidad de feature
+dfspec trace --all             # Analizar todas las features
+dfspec trace <feature> --format=json   # Salida JSON
+dfspec trace <feature> --format=matrix # Ver matriz de links
+dfspec trace --export=report.html      # Exportar a HTML
+dfspec trace --ci              # Modo CI (falla con issues críticos)
+dfspec trace --orphans-only    # Solo artefactos huérfanos
+dfspec trace --severity=critical       # Filtrar por severidad
 ```
 
 ### Uso Basico
@@ -213,22 +233,86 @@ DFSpec proporciona **17 comandos slash**:
 | `/df-deps` | Gestionar dependencias | pub.dev, slopsquatting |
 | `/df-orchestrate` | Orquestar multiples agentes | Pipelines complejos |
 
-### Scripts de Automatizacion
+### Comandos CLI de Servicios
 
-DFSpec incluye scripts bash para automatizacion:
+DFSpec expone servicios programáticos a través del CLI:
 
 ```bash
-# Crear nueva feature con branch y estructura
-./scripts/create-feature.sh "Mi feature"
+# Verificación constitucional
+dfspec verify --all                      # Verificar todos los quality gates
+dfspec verify --gate=tdd                 # Verificar gate específico
+dfspec verify --gate=coverage --threshold=85
+dfspec verify --all --ci                 # Modo CI (falla si no pasa)
 
-# Validar estructura de spec
-./scripts/validate-spec.sh
+# Análisis de calidad
+dfspec quality analyze                   # Análisis completo
+dfspec quality complexity --max=10       # Solo complejidad
+dfspec quality docs --threshold=80       # Solo documentación
 
-# Ejecutar todos los checks de calidad
-./scripts/run-quality.sh
+# Reportes
+dfspec report --project                  # Reporte del proyecto
+dfspec report --feature=mi-feature       # Reporte de feature
+dfspec report --feature=mi-feature --format=json --save
 
-# Ver prerrequisitos del workflow
-./scripts/check-prerequisites.sh
+# Documentación
+dfspec docs verify --threshold=80        # Verificar cobertura de docs
+dfspec docs generate --type=readme --feature=mi-feature
+
+# Cache
+dfspec cache stats                       # Ver estadísticas
+dfspec cache clear                       # Limpiar cache
+
+# Recovery Points (checkpoints TDD)
+dfspec recovery create --feature=mi-feature --component=domain --message="Domain layer complete"
+dfspec recovery list --feature=mi-feature
+dfspec recovery restore --feature=mi-feature
+dfspec recovery report
+```
+
+### Scripts de Automatizacion
+
+DFSpec incluye scripts bash que retornan JSON estructurado para automatizacion:
+
+```bash
+# Detectar contexto completo del proyecto
+./scripts/bash/detect-context.sh --json
+# Retorna: project, git, feature, documents, quality
+
+# Verificar prerequisitos para un paso
+./scripts/bash/check-prerequisites.sh --json --require-spec --require-plan
+# Retorna: feature_id, paths, available_docs
+
+# Crear nueva feature con branch y spec.md
+./scripts/bash/create-new-feature.sh "Mi Feature" --json
+# Retorna: feature_id (001-mi-feature), branch_name, paths
+
+# Configurar entorno de planificacion
+./scripts/bash/setup-plan.sh --json --full
+# Retorna: plan.md, research.md, data-model.md, contracts/
+
+# Validar calidad de especificacion
+./scripts/bash/validate-spec.sh --json
+# Retorna: score (0-100), findings (CRITICAL, WARNING, INFO)
+```
+
+**Variables de Entorno:**
+```bash
+DFSPEC_FEATURE=001-auth    # Override feature actual
+DFSPEC_DEBUG=true          # Habilitar debug output
+```
+
+**Output JSON Estandar:**
+```json
+{
+  "status": "success",
+  "data": {
+    "feature_id": "001-mi-feature",
+    "paths": {
+      "spec": "specs/features/001-mi-feature/spec.md",
+      "plan": "specs/plans/001-mi-feature.plan.md"
+    }
+  }
+}
 ```
 
 ## Flujo de Trabajo
@@ -461,7 +545,7 @@ dfspec-ia/
 │   └── plans/                # Planes de implementacion
 ├── memory/
 │   └── constitution.md       # Principios inmutables
-├── test/                     # 217+ tests
+├── test/                     # 899+ tests
 ├── bin/
 │   └── dfspec.dart           # Entry point del CLI
 ├── pubspec.yaml

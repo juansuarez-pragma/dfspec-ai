@@ -37,6 +37,7 @@ class ArtifactTemplates {
     name: 'Feature Specification',
     variables: {
       'title': 'Nombre de la Feature',
+      'feature_id': '001',
       'date': '',
       'author': '',
       'version': '1.0',
@@ -99,11 +100,13 @@ class ArtifactTemplates {
   static const String _featureContent = '''
 # Especificacion: {{title}}
 
+> **Feature ID:** FEAT-{{feature_id}}
 > **Version:** {{version}}
 > **Fecha:** {{date}}
 > **Autor:** {{author}}
+> **Estado:** draft
 
-## Resumen
+## Resumen Ejecutivo
 
 [Descripcion breve de la funcionalidad en 2-3 oraciones]
 
@@ -112,17 +115,45 @@ class ArtifactTemplates {
 ### Problema
 [Que problema resuelve esta feature]
 
-### Justificacion
-[Por que es necesaria esta solucion]
+### Justificacion de Negocio
+[Por que es necesaria esta solucion - valor para el usuario/negocio]
 
 ### Alcance
 - **Incluye:** [Lista de lo que SI incluye]
 - **Excluye:** [Lista de lo que NO incluye]
 
+## User Stories
+
+### US-01: [Titulo de la Historia]
+**Como** [rol de usuario]
+**Quiero** [accion/funcionalidad]
+**Para** [beneficio/valor]
+
+**Criterios de Aceptacion:**
+- [ ] **DADO** [contexto inicial] **CUANDO** [accion] **ENTONCES** [resultado esperado]
+- [ ] **DADO** [contexto inicial] **CUANDO** [accion] **ENTONCES** [resultado esperado]
+
+**Prioridad:** Alta/Media/Baja
+**Estimacion:** S/M/L/XL
+
+---
+
+### US-02: [Titulo de la Historia]
+**Como** [rol de usuario]
+**Quiero** [accion/funcionalidad]
+**Para** [beneficio/valor]
+
+**Criterios de Aceptacion:**
+- [ ] **DADO** [contexto inicial] **CUANDO** [accion] **ENTONCES** [resultado esperado]
+
+**Prioridad:** Alta/Media/Baja
+**Estimacion:** S/M/L/XL
+
 ## Requisitos Funcionales
 
 ### RF-01: [Nombre del Requisito]
 **Descripcion:** [Descripcion detallada]
+**User Story:** US-01
 
 **Criterios:**
 - [ ] [Criterio especifico y medible]
@@ -130,6 +161,7 @@ class ArtifactTemplates {
 
 ### RF-02: [Nombre del Requisito]
 **Descripcion:** [Descripcion detallada]
+**User Story:** US-02
 
 **Criterios:**
 - [ ] [Criterio especifico y medible]
@@ -139,67 +171,154 @@ class ArtifactTemplates {
 ### RNF-01: Rendimiento
 - Tiempo de respuesta < 100ms
 - Renderizado a 60fps
+- Frame budget < 16ms
 
 ### RNF-02: Seguridad
 - Validacion de todos los inputs
 - Sanitizacion de datos de usuario
+- No almacenar datos sensibles sin encriptar
 
 ### RNF-03: Accesibilidad
-- Soporte para lectores de pantalla
-- Contraste minimo AA
+- Soporte para lectores de pantalla (Semantics)
+- Contraste minimo AA (4.5:1)
+- Touch targets >= 48x48
+
+### RNF-04: Mantenibilidad
+- Cobertura de tests >= 85%
+- Complejidad ciclomatica < 10
+- Documentacion de API publica
 
 ## Casos de Uso
 
 ### CU-01: [Nombre del Caso de Uso]
 **Actor:** [Usuario/Sistema]
+**User Story:** US-01
 **Precondiciones:** [Estado inicial requerido]
+
 **Flujo Principal:**
 1. [Paso 1]
 2. [Paso 2]
 3. [Paso 3]
 
-**Flujo Alternativo:**
-- [Variacion del flujo]
+**Flujos Alternativos:**
+- **FA-01:** [Variacion del flujo]
+- **FA-02:** [Otra variacion]
+
+**Flujos de Excepcion:**
+- **FE-01:** [Manejo de error]
 
 **Postcondiciones:** [Estado final esperado]
 
 ## Modelo de Datos
 
+### Entidades de Dominio
+
 ```dart
-class EntityName {
+/// [Descripcion de la entidad]
+class EntityName extends Equatable {
+  const EntityName({
+    required this.id,
+    required this.name,
+  });
+
   final String id;
   final String name;
-  // Definir estructura
+
+  @override
+  List<Object?> get props => [id, name];
 }
+```
+
+### Diagrama de Relaciones
+
+```mermaid
+erDiagram
+    ENTITY1 ||--o{ ENTITY2 : contains
+    ENTITY1 {
+        string id PK
+        string name
+    }
+    ENTITY2 {
+        string id PK
+        string entity1_id FK
+    }
 ```
 
 ## Interfaces de Usuario
 
 ### Pantalla: [Nombre]
 - **Proposito:** [Descripcion]
+- **User Story:** US-01
 - **Componentes:** [Lista de widgets]
 - **Interacciones:** [Eventos de usuario]
+- **Estados:** [Loading, Error, Empty, Success]
+
+### Wireframe (ASCII)
+```
++---------------------------+
+|  [Header/AppBar]          |
++---------------------------+
+|                           |
+|  [Contenido principal]    |
+|                           |
+|  [Lista/Grid/Form]        |
+|                           |
++---------------------------+
+|  [Bottom Navigation]      |
++---------------------------+
+```
 
 ## Dependencias
 
-- **Internas:** [Modulos del proyecto]
-- **Externas:** [Paquetes de pub.dev]
+### Internas
+- [Modulos del proyecto que se usaran]
 
-## Criterios de Aceptacion
+### Externas (pub.dev)
+| Paquete | Version | Proposito |
+|---------|---------|-----------|
+| [paquete] | ^X.Y.Z | [Para que se usa] |
 
-- [ ] **CA-01:** [Criterio verificable]
-- [ ] **CA-02:** [Criterio verificable]
-- [ ] **CA-03:** [Criterio verificable]
+## Matriz de Trazabilidad
+
+| User Story | Requisitos | Casos de Uso | Tests |
+|------------|------------|--------------|-------|
+| US-01 | RF-01, RNF-01 | CU-01 | T-01, T-02 |
+| US-02 | RF-02, RNF-02 | CU-02 | T-03 |
+
+## Criterios de Aceptacion Globales
+
+- [ ] **CA-01:** Todos los User Stories implementados
+- [ ] **CA-02:** Cobertura de tests >= 85%
+- [ ] **CA-03:** Cero errores de lint (dart analyze)
+- [ ] **CA-04:** Performance: 60fps en dispositivo low-end
+- [ ] **CA-05:** Accesibilidad: funciona con TalkBack/VoiceOver
 
 ## Riesgos y Mitigaciones
 
-| Riesgo | Probabilidad | Impacto | Mitigacion |
-|--------|-------------|---------|------------|
-| [Riesgo 1] | Alta/Media/Baja | Alto/Medio/Bajo | [Estrategia] |
+| ID | Riesgo | Probabilidad | Impacto | Mitigacion |
+|----|--------|-------------|---------|------------|
+| R-01 | [Riesgo 1] | Alta/Media/Baja | Alto/Medio/Bajo | [Estrategia] |
+| R-02 | [Riesgo 2] | Alta/Media/Baja | Alto/Medio/Bajo | [Estrategia] |
+
+## Definition of Done (DoD)
+
+- [ ] Codigo implementado siguiendo Clean Architecture
+- [ ] Tests unitarios escritos (TDD)
+- [ ] Code review aprobado
+- [ ] Documentacion actualizada
+- [ ] Sin warnings de lint
+- [ ] Quality gates pasando
+- [ ] Criterios de aceptacion verificados
 
 ## Notas Tecnicas
 
-[Consideraciones de implementacion, decisiones tecnicas, etc.]
+[Consideraciones de implementacion, decisiones tecnicas, trade-offs, etc.]
+
+## Referencias
+
+- [Link a documentacion externa]
+- [Link a diseños/mockups]
+- [Link a APIs relacionadas]
 
 ---
 *Generado con DFSpec - Spec-Driven Development para Flutter/Dart*
@@ -615,14 +734,23 @@ class Entity {
 
 > **Especificacion:** {{spec_ref}}
 > **Fecha:** {{date}}
+> **Estado:** draft
 
 ## Resumen
 
 [Breve descripcion del plan de implementacion]
 
+## User Stories a Implementar
+
+| ID | Titulo | Prioridad | Estimacion |
+|----|--------|-----------|------------|
+| US-01 | [Titulo] | Alta | M |
+| US-02 | [Titulo] | Media | S |
+
 ## Prerequisitos
 
 - [ ] Especificacion aprobada
+- [ ] User Stories revisadas con stakeholders
 - [ ] Dependencias identificadas
 - [ ] Ambiente de desarrollo listo
 

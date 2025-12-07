@@ -259,7 +259,6 @@ void main() {
         status: RecoveryStatus.stable,
         timestamp: DateTime.now(),
         files: const [],
-        testResults: const [],
       );
 
       // Sin test results, isGreen es false aunque status sea stable

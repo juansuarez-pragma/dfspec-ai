@@ -221,10 +221,10 @@ class ConstitutionalReport {
 
   /// Porcentaje de gates exitosos.
   double get passRate {
-    if (results.isEmpty) return 1.0;
+    if (results.isEmpty) return 1;
     final applicable =
         results.where((r) => r.status != GateStatus.notApplicable).length;
-    if (applicable == 0) return 1.0;
+    if (applicable == 0) return 1;
     return passed.length / applicable;
   }
 

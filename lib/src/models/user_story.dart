@@ -187,13 +187,13 @@ class UserStory {
   /// Prioridad (P1-MVP, P2, P3).
   final Priority priority;
 
-  /// Rol del usuario (formato "Como [rol]").
+  /// Rol del usuario (formato "Como <rol>").
   final String asA;
 
-  /// Funcionalidad deseada (formato "Quiero [funcionalidad]").
+  /// Funcionalidad deseada (formato "Quiero <funcionalidad>").
   final String iWant;
 
-  /// Beneficio esperado (formato "Para [beneficio]").
+  /// Beneficio esperado (formato "Para <beneficio>").
   final String soThat;
 
   /// Lista de criterios de aceptacion.

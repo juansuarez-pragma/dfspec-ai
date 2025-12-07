@@ -6,6 +6,9 @@ analyzer:
     - "**/*.freezed.dart"
     - "build/**"
     - ".dart_tool/**"
+  language:
+    # Desactivar strict-raw-types del analyzer
+    strict-raw-types: false
 
 linter:
   rules:
@@ -17,3 +20,17 @@ linter:
     lines_longer_than_80_chars: false
     prefer_single_quotes: true
     sort_constructors_first: true
+    # Desactivar cascade_invocations - demasiado estricto para StringBuffer
+    cascade_invocations: false
+    # Desactivar avoid_slow_async_io - necesario para operaciones de archivo
+    avoid_slow_async_io: false
+    # Desactivar comment_references - causa falsos positivos con texto en corchetes
+    comment_references: false
+    # Desactivar use_named_constants - demasiado estricto
+    use_named_constants: false
+    # Desactivar avoid_dynamic_calls en ciertos casos
+    avoid_dynamic_calls: false
+    # Desactivar avoid_positional_boolean_parameters
+    avoid_positional_boolean_parameters: false
+    # Desactivar unnecessary_statements
+    unnecessary_statements: false

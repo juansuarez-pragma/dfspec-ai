@@ -1,6 +1,9 @@
 ---
 description: Implementa codigo siguiendo TDD estricto
 allowed-tools: Read, Write, Edit, Glob, Grep, Bash, Task, AskUserQuestion, mcp__dart__create_project, mcp__dart__pub, mcp__dart__run_tests, mcp__dart__analyze_files, mcp__dart__dart_format, mcp__dart__add_roots
+scripts:
+  sh: scripts/bash/check-prerequisites.sh --json --require-spec --require-plan
+  context: scripts/bash/detect-context.sh --json
 ---
 
 # Comando: df-implement
@@ -9,6 +12,40 @@ Eres un agente de implementacion para Flutter/Dart con TDD estricto.
 
 ## Tarea
 Implementa: $ARGUMENTS
+
+## Scripts de Automatizacion
+
+**IMPORTANTE:** Antes de iniciar, ejecuta el script de prerequisitos:
+
+```bash
+./scripts/bash/check-prerequisites.sh --json --require-spec --require-plan
+```
+
+Este script:
+- Verifica que existen spec.md Y plan.md para la feature
+- Retorna paths de todos los documentos necesarios
+- Falla con error claro si falta algo
+
+**Salida JSON esperada:**
+```json
+{
+  "status": "success",
+  "data": {
+    "feature_id": "001-auth",
+    "paths": {
+      "feature_dir": "specs/features/001-auth",
+      "spec": "specs/features/001-auth/spec.md",
+      "plan": "specs/plans/001-auth.plan.md",
+      "tasks": "specs/features/001-auth/tasks.md"
+    },
+    "available_docs": ["spec.md", "plan.md"]
+  }
+}
+```
+
+**Si falla, indicar al usuario:**
+- Si falta spec: "Ejecuta `/df-spec` primero"
+- Si falta plan: "Ejecuta `/df-plan` primero"
 
 ## Proceso Obligatorio
 
@@ -177,7 +214,12 @@ Implementa: $ARGUMENTS
      roots: [{ root: "file://[project.path]" }]
    ```
 
-4. Verificar criterios del plan antes de continuar
+4. **Crear recovery checkpoint (si tests pasan):**
+   ```bash
+   dart run dfspec recovery create --feature=[nombre] --component=[capa] --message="[capa] completada"
+   ```
+
+5. Verificar criterios del plan antes de continuar
 
 ### FASE 5: Verificacion Final
 
@@ -193,12 +235,22 @@ Implementa: $ARGUMENTS
      roots: [{ root: "file://[project.path]" }]
    ```
 
-3. **Verificar contra criterios de aceptacion:**
+3. **Verificar quality gates constitucionales:**
+   ```bash
+   dart run dfspec verify --all
+   ```
+
+4. **Generar reporte de feature:**
+   ```bash
+   dart run dfspec report --feature=[nombre] --save
+   ```
+
+5. **Verificar contra criterios de aceptacion:**
    - Leer CA de la especificacion
    - Mapear cada CA a tests existentes
    - Confirmar que todos pasan
 
-4. **Actualizar dfspec.yaml DEL PROYECTO DESTINO** (`[project.path]/dfspec.yaml`):
+6. **Actualizar dfspec.yaml DEL PROYECTO DESTINO** (`[project.path]/dfspec.yaml`):
    - Cambiar status de la feature a `implemented`
 
 ## Principios de Implementacion
@@ -243,3 +295,17 @@ Para verificar contra la especificacion:
 Para ejecutar la aplicacion:
 [comando segun tipo de proyecto]
 ```
+
+## Handoffs
+
+### Entradas (otros comandos invocan df-implement)
+- Desde `/df-plan`: despues de generar plan
+- Desde `/df-orchestrate`: como parte del pipeline
+- Desde `/df-test`: para completar implementacion faltante
+
+### Salidas (df-implement invoca otros comandos)
+- Ciclo TDD requiere: `/df-test` (RED → GREEN)
+- Fase REFACTOR: `/df-review` para validar SOLID
+- Verificacion final: `/df-verify` post-implementacion
+- Si dependencias faltan: `/df-deps` para agregar
+- Documentar codigo nuevo: `/df-docs`

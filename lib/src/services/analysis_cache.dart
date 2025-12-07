@@ -22,6 +22,22 @@ class CacheEntry<T> {
     this.ttl,
   });
 
+  /// Crea desde JSON.
+  factory CacheEntry.fromJson(
+    Map<String, dynamic> json,
+    T Function(dynamic) valueFromJson,
+  ) {
+    return CacheEntry<T>(
+      key: json['key'] as String,
+      value: valueFromJson(json['value']),
+      hash: json['hash'] as String,
+      timestamp: DateTime.parse(json['timestamp'] as String),
+      ttl: json['ttl_ms'] != null
+          ? Duration(milliseconds: json['ttl_ms'] as int)
+          : null,
+    );
+  }
+
   /// Clave de la entrada.
   final String key;
 
@@ -41,22 +57,6 @@ class CacheEntry<T> {
   bool get isExpired {
     if (ttl == null) return false;
     return DateTime.now().difference(timestamp) > ttl!;
-  }
-
-  /// Crea desde JSON.
-  factory CacheEntry.fromJson(
-    Map<String, dynamic> json,
-    T Function(dynamic) valueFromJson,
-  ) {
-    return CacheEntry<T>(
-      key: json['key'] as String,
-      value: valueFromJson(json['value']),
-      hash: json['hash'] as String,
-      timestamp: DateTime.parse(json['timestamp'] as String),
-      ttl: json['ttl_ms'] != null
-          ? Duration(milliseconds: json['ttl_ms'] as int)
-          : null,
-    );
   }
 
   /// Convierte a JSON.
@@ -354,7 +354,7 @@ class PersistentCache {
   String _sanitizeKey(String key) {
     return key
         .replaceAll(RegExp(r'[^\w\-.]'), '_')
-        .replaceAll(RegExp(r'_+'), '_');
+        .replaceAll(RegExp('_+'), '_');
   }
 
   Future<void> _checkCacheSize() async {

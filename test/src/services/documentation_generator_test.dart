@@ -140,7 +140,6 @@ version: 1.0.0
         final result = await generator.generateChangelog(
           version: '1.1.0',
           added: ['New feature'],
-          append: true,
         );
 
         expect(result.content, contains('[1.1.0]'));

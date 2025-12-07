@@ -69,6 +69,16 @@ class RecoveryFileState {
     this.content,
   });
 
+  /// Crea desde JSON.
+  factory RecoveryFileState.fromJson(Map<String, dynamic> json) {
+    return RecoveryFileState(
+      path: json['path'] as String,
+      hash: json['hash'] as String,
+      exists: json['exists'] as bool? ?? true,
+      content: json['content'] as String?,
+    );
+  }
+
   /// Ruta relativa del archivo.
   final String path;
 
@@ -80,16 +90,6 @@ class RecoveryFileState {
 
   /// Contenido del archivo (opcional, para archivos pequeños).
   final String? content;
-
-  /// Crea desde JSON.
-  factory RecoveryFileState.fromJson(Map<String, dynamic> json) {
-    return RecoveryFileState(
-      path: json['path'] as String,
-      hash: json['hash'] as String,
-      exists: json['exists'] as bool? ?? true,
-      content: json['content'] as String?,
-    );
-  }
 
   /// Convierte a JSON.
   Map<String, dynamic> toJson() => {
@@ -115,6 +115,22 @@ class RecoveryTestResult {
     this.duration,
   });
 
+  /// Crea desde JSON.
+  factory RecoveryTestResult.fromJson(Map<String, dynamic> json) {
+    return RecoveryTestResult(
+      testPath: json['testPath'] as String,
+      passed: json['passed'] as int,
+      total: json['total'] as int,
+      failures: (json['failures'] as List<dynamic>?)
+              ?.map((e) => e as String)
+              .toList() ??
+          [],
+      duration: json['durationMs'] != null
+          ? Duration(milliseconds: json['durationMs'] as int)
+          : null,
+    );
+  }
+
   /// Ruta del archivo de test.
   final String testPath;
 
@@ -135,22 +151,6 @@ class RecoveryTestResult {
 
   /// Porcentaje de éxito.
   double get successRate => total > 0 ? passed / total : 1.0;
-
-  /// Crea desde JSON.
-  factory RecoveryTestResult.fromJson(Map<String, dynamic> json) {
-    return RecoveryTestResult(
-      testPath: json['testPath'] as String,
-      passed: json['passed'] as int,
-      total: json['total'] as int,
-      failures: (json['failures'] as List<dynamic>?)
-              ?.map((e) => e as String)
-              .toList() ??
-          [],
-      duration: json['durationMs'] != null
-          ? Duration(milliseconds: json['durationMs'] as int)
-          : null,
-    );
-  }
 
   /// Convierte a JSON.
   Map<String, dynamic> toJson() => {
@@ -183,49 +183,6 @@ class RecoveryPoint {
     this.parentId,
     this.metadata = const {},
   });
-
-  /// ID único del punto (UUID o timestamp-based).
-  final String id;
-
-  /// Feature al que pertenece.
-  final String feature;
-
-  /// Componente específico (entity, usecase, etc.).
-  final String component;
-
-  /// Tipo de recovery point.
-  final RecoveryType type;
-
-  /// Estado actual del punto.
-  final RecoveryStatus status;
-
-  /// Timestamp de creación.
-  final DateTime timestamp;
-
-  /// Estado de archivos en este punto.
-  final List<RecoveryFileState> files;
-
-  /// Resultados de tests en este punto.
-  final List<RecoveryTestResult> testResults;
-
-  /// Descripción opcional.
-  final String? description;
-
-  /// ID del punto padre (para formar cadena).
-  final String? parentId;
-
-  /// Metadata adicional.
-  final Map<String, dynamic> metadata;
-
-  /// Si todos los tests pasan en este punto.
-  bool get isGreen =>
-      testResults.isNotEmpty && testResults.every((t) => t.allPassed);
-
-  /// Total de tests en este punto.
-  int get totalTests => testResults.fold(0, (sum, t) => sum + t.total);
-
-  /// Tests pasando en este punto.
-  int get passingTests => testResults.fold(0, (sum, t) => sum + t.passed);
 
   /// Crea un punto estable (tests pasan).
   factory RecoveryPoint.stable({
@@ -276,28 +233,6 @@ class RecoveryPoint {
     );
   }
 
-  /// Crea copia con nuevo estado.
-  RecoveryPoint copyWith({
-    RecoveryStatus? status,
-    List<RecoveryTestResult>? testResults,
-    String? description,
-    Map<String, dynamic>? metadata,
-  }) {
-    return RecoveryPoint(
-      id: id,
-      feature: feature,
-      component: component,
-      type: type,
-      status: status ?? this.status,
-      timestamp: timestamp,
-      files: files,
-      testResults: testResults ?? this.testResults,
-      description: description ?? this.description,
-      parentId: parentId,
-      metadata: metadata ?? this.metadata,
-    );
-  }
-
   /// Crea desde JSON.
   factory RecoveryPoint.fromJson(Map<String, dynamic> json) {
     return RecoveryPoint(
@@ -325,6 +260,71 @@ class RecoveryPoint {
       parentId: json['parentId'] as String?,
       metadata:
           (json['metadata'] as Map<String, dynamic>?) ?? const {},
+    );
+  }
+
+  /// ID único del punto (UUID o timestamp-based).
+  final String id;
+
+  /// Feature al que pertenece.
+  final String feature;
+
+  /// Componente específico (entity, usecase, etc.).
+  final String component;
+
+  /// Tipo de recovery point.
+  final RecoveryType type;
+
+  /// Estado actual del punto.
+  final RecoveryStatus status;
+
+  /// Timestamp de creación.
+  final DateTime timestamp;
+
+  /// Estado de archivos en este punto.
+  final List<RecoveryFileState> files;
+
+  /// Resultados de tests en este punto.
+  final List<RecoveryTestResult> testResults;
+
+  /// Descripción opcional.
+  final String? description;
+
+  /// ID del punto padre (para formar cadena).
+  final String? parentId;
+
+  /// Metadata adicional.
+  final Map<String, dynamic> metadata;
+
+  /// Si todos los tests pasan en este punto.
+  bool get isGreen =>
+      testResults.isNotEmpty && testResults.every((t) => t.allPassed);
+
+  /// Total de tests en este punto.
+  int get totalTests => testResults.fold(0, (sum, t) => sum + t.total);
+
+  /// Tests pasando en este punto.
+  int get passingTests => testResults.fold(0, (sum, t) => sum + t.passed);
+
+  /// Crea copia con nuevo estado.
+  RecoveryPoint copyWith({
+    RecoveryStatus? status,
+    List<RecoveryTestResult>? testResults,
+    String? description,
+    Map<String, dynamic>? metadata,
+  }) {
+    return RecoveryPoint(
+      id: id,
+      feature: feature,
+      component: component,
+      type: type,
+      status: status ?? this.status,
+      timestamp: timestamp,
+      files: files,
+      testResults: testResults ?? this.testResults,
+      description: description ?? this.description,
+      parentId: parentId,
+      metadata: metadata ?? this.metadata,
     );
   }
 
@@ -367,6 +367,22 @@ class RecoveryChain {
     this.currentPointId,
   });
 
+  /// Crea cadena vacía.
+  factory RecoveryChain.empty(String feature) {
+    return RecoveryChain(feature: feature, points: const []);
+  }
+
+  /// Crea desde JSON.
+  factory RecoveryChain.fromJson(Map<String, dynamic> json) {
+    return RecoveryChain(
+      feature: json['feature'] as String,
+      points: (json['points'] as List<dynamic>)
+          .map((p) => RecoveryPoint.fromJson(p as Map<String, dynamic>))
+          .toList(),
+      currentPointId: json['currentPointId'] as String?,
+    );
+  }
+
   /// Feature de la cadena.
   final String feature;
 
@@ -395,11 +411,6 @@ class RecoveryChain {
   List<RecoveryPoint> get stablePoints =>
       points.where((p) => p.status == RecoveryStatus.stable).toList();
 
-  /// Crea cadena vacía.
-  factory RecoveryChain.empty(String feature) {
-    return RecoveryChain(feature: feature, points: const []);
-  }
-
   /// Agrega un punto a la cadena.
   RecoveryChain addPoint(RecoveryPoint point) {
     return RecoveryChain(
@@ -425,17 +436,6 @@ class RecoveryChain {
       feature: feature,
       points: newPoints,
       currentPointId: pointId,
-    );
-  }
-
-  /// Crea desde JSON.
-  factory RecoveryChain.fromJson(Map<String, dynamic> json) {
-    return RecoveryChain(
-      feature: json['feature'] as String,
-      points: (json['points'] as List<dynamic>)
-          .map((p) => RecoveryPoint.fromJson(p as Map<String, dynamic>))
-          .toList(),
-      currentPointId: json['currentPointId'] as String?,
     );
   }
 

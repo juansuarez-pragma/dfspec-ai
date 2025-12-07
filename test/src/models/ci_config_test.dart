@@ -124,7 +124,7 @@ void main() {
 
     test('debe serializar y deserializar', () {
       const original = QualityGateConfig(
-        minCoverage: 90.0,
+        minCoverage: 90,
         maxCyclomaticComplexity: 8,
         requireDocumentation: false,
       );
@@ -170,7 +170,6 @@ void main() {
       const original = CIConfig(
         name: 'My CI',
         triggers: [CITrigger.pullRequestMain, CITrigger.pushMain],
-        platforms: ['ubuntu-latest'],
         dartVersions: ['stable', '3.0.0'],
         parallelJobs: false,
       );
@@ -189,7 +188,6 @@ void main() {
       test('debe generar workflow con trigger PR a main', () {
         const config = CIConfig(
           name: 'Test CI',
-          triggers: [CITrigger.pullRequestMain],
         );
 
         final workflow = config.generateGitHubWorkflow();
@@ -213,7 +211,6 @@ void main() {
       test('debe incluir cache cuando esta habilitado', () {
         const config = CIConfig(
           name: 'Test CI',
-          cacheEnabled: true,
         );
 
         final workflow = config.generateGitHubWorkflow();
@@ -259,7 +256,7 @@ void main() {
           StageResult(stage: CIStage.test, status: StageStatus.passed),
           StageResult(stage: CIStage.build, status: StageStatus.skipped),
         ],
-        startTime: DateTime(2024, 1, 1, 10, 0),
+        startTime: DateTime(2024, 1, 1, 10),
         endTime: DateTime(2024, 1, 1, 10, 5),
       );
 
@@ -276,7 +273,7 @@ void main() {
           StageResult(stage: CIStage.format, status: StageStatus.passed),
           StageResult(stage: CIStage.test, status: StageStatus.failed),
         ],
-        startTime: DateTime(2024, 1, 1, 10, 0),
+        startTime: DateTime(2024, 1, 1, 10),
       );
 
       expect(result.isSuccess, isFalse);
@@ -299,7 +296,7 @@ void main() {
             duration: Duration(minutes: 2),
           ),
         ],
-        startTime: DateTime(2024, 1, 1, 10, 0),
+        startTime: DateTime(2024, 1, 1, 10),
         endTime: DateTime(2024, 1, 1, 10, 3),
         commit: 'abc123def456',
         branch: 'feature/test',
@@ -324,7 +321,7 @@ void main() {
         results: const [
           StageResult(stage: CIStage.format, status: StageStatus.passed),
         ],
-        startTime: DateTime(2024, 1, 1, 10, 0),
+        startTime: DateTime(2024, 1, 1, 10),
         endTime: DateTime(2024, 1, 1, 10, 5),
         commit: 'abc123',
         branch: 'main',

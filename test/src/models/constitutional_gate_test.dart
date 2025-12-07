@@ -25,7 +25,7 @@ void main() {
       final result = GateResult.failed(
         'test-gate',
         message: 'Violacion detectada',
-        details: ['Linea 10: import invalido'],
+        details: const ['Linea 10: import invalido'],
         location: 'lib/src/domain/test.dart',
       );
 
@@ -42,7 +42,7 @@ void main() {
       final result = GateResult.warning(
         'test-gate',
         message: 'Posible violacion',
-        details: ['Revisar manualmente'],
+        details: const ['Revisar manualmente'],
       );
 
       expect(result.status, equals(GateStatus.warning));
@@ -75,8 +75,8 @@ void main() {
         description: 'Separacion de capas',
         severity: GateSeverity.critical,
         rules: ['Domain no importa data'],
-        checkPatterns: [r'abstract class'],
-        violationPatterns: [r"import.*'/data/'"],
+        checkPatterns: ['abstract class'],
+        violationPatterns: ["import.*'/data/'"],
       );
 
       expect(gate.id, equals('clean-architecture'));
@@ -204,7 +204,7 @@ void main() {
           GateResult.failed(
             'gate-2',
             message: 'Error',
-            details: ['Detalle 1'],
+            details: const ['Detalle 1'],
           ),
         ],
         timestamp: DateTime(2024, 1, 15),
@@ -274,7 +274,7 @@ void main() {
 
     group('gates especificos', () {
       test('cleanArchitecture debe tener patrones de violacion', () {
-        final gate = ConstitutionalGates.cleanArchitecture;
+        const gate = ConstitutionalGates.cleanArchitecture;
 
         expect(gate.id, equals('clean-architecture'));
         expect(gate.violationPatterns, isNotEmpty);
@@ -282,14 +282,14 @@ void main() {
       });
 
       test('tdd debe tener reglas de correspondencia', () {
-        final gate = ConstitutionalGates.tdd;
+        const gate = ConstitutionalGates.tdd;
 
         expect(gate.id, equals('tdd'));
         expect(gate.rules, contains('Ciclo RED-GREEN-REFACTOR'));
       });
 
       test('immutableEntities debe detectar setters', () {
-        final gate = ConstitutionalGates.immutableEntities;
+        const gate = ConstitutionalGates.immutableEntities;
 
         expect(gate.id, equals('immutable-entities'));
         expect(
@@ -299,7 +299,7 @@ void main() {
       });
 
       test('errorHandling debe detectar Exception generica', () {
-        final gate = ConstitutionalGates.errorHandling;
+        const gate = ConstitutionalGates.errorHandling;
 
         expect(
           gate.violationPatterns.any((p) => p.contains('Exception')),

@@ -54,7 +54,7 @@ void main() {
     test('debe serializar y deserializar', () {
       final original = CacheEntry<Map<String, dynamic>>(
         key: 'test',
-        value: {'data': 'value'},
+        value: const {'data': 'value'},
         hash: 'hash123',
         timestamp: DateTime(2024, 6, 15, 10, 30),
         ttl: const Duration(hours: 2),
@@ -142,7 +142,7 @@ void main() {
       cache.set('feature-user', 'value2', 'hash2');
       cache.set('other-key', 'value3', 'hash3');
 
-      cache.invalidatePattern(r'^feature-');
+      cache.invalidatePattern('^feature-');
 
       expect(cache.get<String>('feature-city', 'hash1'), isNull);
       expect(cache.get<String>('feature-user', 'hash2'), isNull);

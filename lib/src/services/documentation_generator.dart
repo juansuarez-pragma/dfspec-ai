@@ -226,7 +226,7 @@ class DocumentationGenerator {
             // Convertir CamelCase a descripción
             final description = className
                 .replaceAllMapped(
-                  RegExp(r'([A-Z])'),
+                  RegExp('([A-Z])'),
                   (m) => ' ${m.group(1)}',
                 )
                 .trim();
@@ -508,7 +508,7 @@ Capa de presentación con $presentationFiles archivos.
   /// Convierte CamelCase a texto legible.
   String _toReadable(String name) {
     final spaced = name
-        .replaceAllMapped(RegExp(r'([A-Z])'), (m) => ' ${m.group(1)!.toLowerCase()}')
+        .replaceAllMapped(RegExp('([A-Z])'), (m) => ' ${m.group(1)!.toLowerCase()}')
         .trim();
     if (spaced.isEmpty) return name;
     return spaced[0].toUpperCase() + spaced.substring(1);

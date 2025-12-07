@@ -78,7 +78,7 @@ class UserEntity {
 
       test('debe calcular complejidad', () async {
         await File('${tempDir.path}/lib/src/domain/usecases/search_cities.dart')
-            .writeAsString('''
+            .writeAsString(r'''
 class SearchCities {
   List<String> call(String query) {
     if (query.isEmpty) return [];
@@ -87,9 +87,9 @@ class SearchCities {
     final results = <String>[];
     for (var i = 0; i < 10; i++) {
       if (i % 2 == 0) {
-        results.add('City \$i');
+        results.add('City $i');
       } else {
-        results.add('Town \$i');
+        results.add('Town $i');
       }
     }
 

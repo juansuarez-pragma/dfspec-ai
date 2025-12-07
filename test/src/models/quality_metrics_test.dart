@@ -308,7 +308,7 @@ void main() {
     });
 
     test('coverage threshold debe seguir constitucion', () {
-      final threshold = QualityThresholds.coverage;
+      const threshold = QualityThresholds.coverage;
 
       expect(threshold.optimal, equals(0.90));
       expect(threshold.acceptable, equals(0.85));
@@ -316,8 +316,8 @@ void main() {
     });
 
     test('domainCoverage debe ser mas estricto', () {
-      final domain = QualityThresholds.domainCoverage;
-      final general = QualityThresholds.coverage;
+      const domain = QualityThresholds.domainCoverage;
+      const general = QualityThresholds.coverage;
 
       expect(domain.optimal, greaterThan(general.optimal));
     });

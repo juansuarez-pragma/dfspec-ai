@@ -6,9 +6,8 @@ library;
 
 import 'dart:io';
 
+import 'package:dfspec/src/models/feature_report.dart';
 import 'package:yaml/yaml.dart';
-
-import '../models/feature_report.dart';
 
 /// Generador de reportes de features.
 class ReportGenerator {
@@ -167,7 +166,7 @@ class ReportGenerator {
     final patterns = featurePattern.split('_');
 
     // Match si contiene alguna de las palabras clave de la feature
-    return patterns.any((p) => normalizedFile.contains(p));
+    return patterns.any(normalizedFile.contains);
   }
 
   ComponentType _determineComponentType(

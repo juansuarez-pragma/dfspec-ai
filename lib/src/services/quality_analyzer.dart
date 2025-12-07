@@ -176,7 +176,7 @@ class QualityAnalyzer {
   /// Calcula métrica de documentación.
   Future<QualityMetric> _calculateDocumentationMetric(List<File> files) async {
     if (files.isEmpty) {
-      return QualityMetrics.documentation(1.0);
+      return QualityMetrics.documentation(1);
     }
 
     var documented = 0;
@@ -262,7 +262,7 @@ class QualityAnalyzer {
       RegExp(r'\bcatch\s*\('),
       RegExp(r'\?\?'),
       RegExp(r'\?\s*:'), // Ternario
-      RegExp(r'&&'),
+      RegExp('&&'),
       RegExp(r'\|\|'),
     ];
 

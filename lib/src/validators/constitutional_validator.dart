@@ -117,7 +117,7 @@ class ConstitutionalValidator {
 
   /// Determina si un gate aplica a un archivo especifico.
   bool _gateApplies(ConstitutionalGate gate, String filePath) {
-    final normalizedPath = filePath.replaceAll('\\', '/');
+    final normalizedPath = filePath.replaceAll(r'\', '/');
 
     switch (gate.id) {
       case 'clean-architecture':
@@ -205,7 +205,7 @@ class ConstitutionalValidator {
   /// Valida imports de Clean Architecture en un archivo de domain.
   GateResult validateCleanArchitectureImports(String content, String filePath) {
     if (!filePath.contains('/domain/')) {
-      return GateResult(
+      return const GateResult(
         gateId: 'clean-architecture',
         status: GateStatus.notApplicable,
       );
@@ -248,7 +248,7 @@ class ConstitutionalValidator {
   /// Valida que una entidad sea inmutable.
   GateResult validateImmutableEntity(String content, String filePath) {
     if (!filePath.contains('/entities/')) {
-      return GateResult(
+      return const GateResult(
         gateId: 'immutable-entities',
         status: GateStatus.notApplicable,
       );
@@ -302,10 +302,10 @@ class ConstitutionalValidator {
     String productionPath,
     bool testExists,
   ) {
-    final normalizedPath = productionPath.replaceAll('\\', '/');
+    final normalizedPath = productionPath.replaceAll(r'\', '/');
     if (!normalizedPath.contains('/lib/') &&
         !normalizedPath.startsWith('lib/')) {
-      return GateResult(
+      return const GateResult(
         gateId: 'tdd',
         status: GateStatus.notApplicable,
       );

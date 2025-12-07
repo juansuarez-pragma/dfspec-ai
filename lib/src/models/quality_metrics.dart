@@ -66,6 +66,15 @@ class MetricThreshold {
     required this.warning,
   });
 
+  /// Crea desde JSON.
+  factory MetricThreshold.fromJson(Map<String, dynamic> json) {
+    return MetricThreshold(
+      optimal: (json['optimal'] as num).toDouble(),
+      acceptable: (json['acceptable'] as num).toDouble(),
+      warning: (json['warning'] as num).toDouble(),
+    );
+  }
+
   /// Valor para nivel óptimo (>=).
   final double optimal;
 
@@ -91,15 +100,6 @@ class MetricThreshold {
     return MetricSeverity.critical;
   }
 
-  /// Crea desde JSON.
-  factory MetricThreshold.fromJson(Map<String, dynamic> json) {
-    return MetricThreshold(
-      optimal: (json['optimal'] as num).toDouble(),
-      acceptable: (json['acceptable'] as num).toDouble(),
-      warning: (json['warning'] as num).toDouble(),
-    );
-  }
-
   /// Convierte a JSON.
   Map<String, dynamic> toJson() => {
         'optimal': optimal,
@@ -123,6 +123,29 @@ class QualityMetric {
     this.details = const [],
     this.inverseScale = false,
   });
+
+  /// Crea desde JSON.
+  factory QualityMetric.fromJson(Map<String, dynamic> json) {
+    return QualityMetric(
+      id: json['id'] as String,
+      name: json['name'] as String,
+      category: MetricCategory.values.firstWhere(
+        (c) => c.name == json['category'],
+        orElse: () => MetricCategory.maintainability,
+      ),
+      value: (json['value'] as num).toDouble(),
+      threshold: MetricThreshold.fromJson(
+        json['threshold'] as Map<String, dynamic>,
+      ),
+      unit: json['unit'] as String? ?? '',
+      description: json['description'] as String?,
+      details: (json['details'] as List<dynamic>?)
+              ?.map((e) => e as String)
+              .toList() ??
+          const [],
+      inverseScale: json['inverseScale'] as bool? ?? false,
+    );
+  }
 
   /// Identificador único.
   final String id;
@@ -174,29 +197,6 @@ class QualityMetric {
     return '${value.toStringAsFixed(2)}$unit';
   }
 
-  /// Crea desde JSON.
-  factory QualityMetric.fromJson(Map<String, dynamic> json) {
-    return QualityMetric(
-      id: json['id'] as String,
-      name: json['name'] as String,
-      category: MetricCategory.values.firstWhere(
-        (c) => c.name == json['category'],
-        orElse: () => MetricCategory.maintainability,
-      ),
-      value: (json['value'] as num).toDouble(),
-      threshold: MetricThreshold.fromJson(
-        json['threshold'] as Map<String, dynamic>,
-      ),
-      unit: json['unit'] as String? ?? '',
-      description: json['description'] as String?,
-      details: (json['details'] as List<dynamic>?)
-              ?.map((e) => e as String)
-              .toList() ??
-          const [],
-      inverseScale: json['inverseScale'] as bool? ?? false,
-    );
-  }
-
   /// Convierte a JSON.
   Map<String, dynamic> toJson() => {
         'id': id,
@@ -225,6 +225,26 @@ class QualityReport {
     this.context,
     this.projectName,
   });
+
+  /// Crea reporte vacío.
+  factory QualityReport.empty() {
+    return QualityReport(
+      metrics: const [],
+      timestamp: DateTime.now(),
+    );
+  }
+
+  /// Crea desde JSON.
+  factory QualityReport.fromJson(Map<String, dynamic> json) {
+    return QualityReport(
+      metrics: (json['metrics'] as List<dynamic>)
+          .map((m) => QualityMetric.fromJson(m as Map<String, dynamic>))
+          .toList(),
+      timestamp: DateTime.parse(json['timestamp'] as String),
+      context: json['context'] as String?,
+      projectName: json['projectName'] as String?,
+    );
+  }
 
   /// Lista de métricas.
   final List<QualityMetric> metrics;
@@ -268,7 +288,7 @@ class QualityReport {
 
   /// Puntuación general (0-100).
   double get overallScore {
-    if (metrics.isEmpty) return 100.0;
+    if (metrics.isEmpty) return 100;
 
     var score = 0.0;
     for (final metric in metrics) {
@@ -284,26 +304,6 @@ class QualityReport {
       }
     }
     return score / metrics.length;
-  }
-
-  /// Crea reporte vacío.
-  factory QualityReport.empty() {
-    return QualityReport(
-      metrics: const [],
-      timestamp: DateTime.now(),
-    );
-  }
-
-  /// Crea desde JSON.
-  factory QualityReport.fromJson(Map<String, dynamic> json) {
-    return QualityReport(
-      metrics: (json['metrics'] as List<dynamic>)
-          .map((m) => QualityMetric.fromJson(m as Map<String, dynamic>))
-          .toList(),
-      timestamp: DateTime.parse(json['timestamp'] as String),
-      context: json['context'] as String?,
-      projectName: json['projectName'] as String?,
-    );
   }
 
   /// Convierte a JSON.

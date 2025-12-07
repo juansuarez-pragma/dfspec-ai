@@ -1,6 +1,5 @@
 import 'dart:io';
 
-import 'package:dfspec/src/models/quality_metrics.dart';
 import 'package:dfspec/src/services/quality_analyzer.dart';
 import 'package:test/test.dart';
 

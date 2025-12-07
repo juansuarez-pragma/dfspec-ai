@@ -1,6 +1,10 @@
 ---
 description: Crea o analiza especificaciones de features siguiendo SDD
 allowed-tools: Read, Write, Edit, Glob, Grep, WebSearch, WebFetch, AskUserQuestion, Bash
+scripts:
+  sh: scripts/bash/detect-context.sh --json
+  create: scripts/bash/create-new-feature.sh
+  validate: scripts/bash/validate-spec.sh
 ---
 
 # Comando: df-spec
@@ -9,6 +13,42 @@ Eres un agente especializado en Spec-Driven Development para Flutter/Dart.
 
 ## Tarea
 Analiza o crea una especificacion para: $ARGUMENTS
+
+## Scripts de Automatizacion
+
+**IMPORTANTE:** Antes de iniciar, ejecuta el script de deteccion de contexto:
+
+```bash
+./scripts/bash/detect-context.sh --json
+```
+
+Este script retorna JSON con:
+- `project`: configuracion del proyecto (name, type, state_management)
+- `git`: estado del repositorio (branch, uncommitted changes)
+- `feature`: feature actual detectada (id, number, status)
+- `documents`: documentos disponibles (spec, plan, tasks)
+- `quality`: metricas de calidad (tests, recovery points)
+
+**Para crear nueva feature:**
+```bash
+./scripts/bash/create-new-feature.sh "Nombre de la Feature" --json
+```
+
+Retorna:
+- `feature_id`: identificador completo (ej: "001-mi-feature")
+- `feature_number`: numero auto-incrementado
+- `branch_name`: nombre del branch creado
+- `paths`: rutas de spec, plan, etc.
+
+**Para validar especificacion:**
+```bash
+./scripts/bash/validate-spec.sh --json
+```
+
+Retorna:
+- `passed`: si la spec pasa validacion
+- `score`: puntuacion de calidad (0-100)
+- `findings`: lista de problemas (CRITICAL, WARNING, INFO)
 
 ## Proceso Obligatorio
 
@@ -284,3 +324,44 @@ Opciones: Confirmar / Modificar / Cancelar
 - Requisitos deben ser SMART (Especificos, Medibles, Alcanzables, Relevantes, Temporales)
 - Cada requisito debe tener al menos un criterio de aceptacion
 - Identificar y documentar riesgos
+
+## Servicios CLI Disponibles
+
+### Generacion de Documentacion
+```bash
+# Generar template de especificacion
+dart run dfspec docs generate --type=spec --feature=<nombre>
+
+# Verificar documentacion existente
+dart run dfspec docs verify
+```
+
+### Reportes
+```bash
+# Ver estado del proyecto
+dart run dfspec report --project
+
+# Reporte de feature
+dart run dfspec report --feature=<nombre>
+```
+
+### Cache
+```bash
+# Estadisticas del cache
+dart run dfspec cache stats
+
+# Limpiar cache
+dart run dfspec cache clear
+```
+
+## Handoffs
+
+### Entradas (otros comandos invocan df-spec)
+- Desde `/df-orchestrate`: como primer paso del pipeline
+- Usuario: inicio de nueva feature
+
+### Salidas (df-spec invoca otros comandos)
+- Despues de crear spec: `/df-plan` para generar plan de implementacion
+- Si hay proyecto existente: `/df-status` para ver estado actual
+- Si hay dependencias: `/df-deps` para analizar
+- Para validar spec: `/df-verify` cuando esta implementada

@@ -38,6 +38,19 @@ class DocumentSection {
     this.subsections = const [],
   });
 
+  /// Crea desde JSON.
+  factory DocumentSection.fromJson(Map<String, dynamic> json) {
+    return DocumentSection(
+      title: json['title'] as String,
+      content: json['content'] as String? ?? '',
+      level: json['level'] as int? ?? 2,
+      subsections: (json['subsections'] as List<dynamic>?)
+              ?.map((s) => DocumentSection.fromJson(s as Map<String, dynamic>))
+              .toList() ??
+          const [],
+    );
+  }
+
   /// Título de la sección.
   final String title;
 
@@ -70,19 +83,6 @@ class DocumentSection {
     return buffer.toString();
   }
 
-  /// Crea desde JSON.
-  factory DocumentSection.fromJson(Map<String, dynamic> json) {
-    return DocumentSection(
-      title: json['title'] as String,
-      content: json['content'] as String? ?? '',
-      level: json['level'] as int? ?? 2,
-      subsections: (json['subsections'] as List<dynamic>?)
-              ?.map((s) => DocumentSection.fromJson(s as Map<String, dynamic>))
-              .toList() ??
-          const [],
-    );
-  }
-
   /// Convierte a JSON.
   Map<String, dynamic> toJson() => {
         'title': title,
@@ -105,6 +105,25 @@ class DocumentationSpec {
     this.metadata = const {},
     this.outputPath,
   });
+
+  /// Crea desde JSON.
+  factory DocumentationSpec.fromJson(Map<String, dynamic> json) {
+    return DocumentationSpec(
+      type: DocumentationType.values.firstWhere(
+        (t) => t.name == json['type'],
+        orElse: () => DocumentationType.readme,
+      ),
+      title: json['title'] as String,
+      description: json['description'] as String?,
+      sections: (json['sections'] as List<dynamic>?)
+              ?.map((s) => DocumentSection.fromJson(s as Map<String, dynamic>))
+              .toList() ??
+          const [],
+      metadata:
+          (json['metadata'] as Map<String, dynamic>?) ?? const {},
+      outputPath: json['outputPath'] as String?,
+    );
+  }
 
   /// Tipo de documentación.
   final DocumentationType type;
@@ -158,25 +177,6 @@ class DocumentationSpec {
     }
 
     return buffer.toString();
-  }
-
-  /// Crea desde JSON.
-  factory DocumentationSpec.fromJson(Map<String, dynamic> json) {
-    return DocumentationSpec(
-      type: DocumentationType.values.firstWhere(
-        (t) => t.name == json['type'],
-        orElse: () => DocumentationType.readme,
-      ),
-      title: json['title'] as String,
-      description: json['description'] as String?,
-      sections: (json['sections'] as List<dynamic>?)
-              ?.map((s) => DocumentSection.fromJson(s as Map<String, dynamic>))
-              .toList() ??
-          const [],
-      metadata:
-          (json['metadata'] as Map<String, dynamic>?) ?? const {},
-      outputPath: json['outputPath'] as String?,
-    );
   }
 
   /// Convierte a JSON.

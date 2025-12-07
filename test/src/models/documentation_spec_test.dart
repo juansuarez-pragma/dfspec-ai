@@ -18,7 +18,6 @@ void main() {
       const section = DocumentSection(
         title: 'Introducción',
         content: 'Este es el contenido.',
-        level: 2,
       );
 
       expect(section.title, equals('Introducción'));
@@ -30,7 +29,6 @@ void main() {
       const section = DocumentSection(
         title: 'Instalación',
         content: 'Ejecutar `dart pub get`.',
-        level: 2,
       );
 
       final markdown = section.toMarkdown();
@@ -43,7 +41,6 @@ void main() {
       const section = DocumentSection(
         title: 'Principal',
         content: 'Contenido principal.',
-        level: 2,
         subsections: [
           DocumentSection(
             title: 'Sub 1',

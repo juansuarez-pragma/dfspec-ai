@@ -92,6 +92,20 @@ class StageResult {
     this.logs = const [],
   });
 
+  /// Deserializa desde JSON.
+  factory StageResult.fromJson(Map<String, dynamic> json) {
+    return StageResult(
+      stage: CIStage.values.firstWhere((s) => s.id == json['stage']),
+      status: StageStatus.values.firstWhere((s) => s.id == json['status']),
+      message: json['message'] as String?,
+      duration: json['duration_ms'] != null
+          ? Duration(milliseconds: json['duration_ms'] as int)
+          : null,
+      artifacts: List<String>.from((json['artifacts'] as List?) ?? []),
+      logs: List<String>.from((json['logs'] as List?) ?? []),
+    );
+  }
+
   /// Etapa ejecutada.
   final CIStage stage;
 
@@ -126,20 +140,6 @@ class StageResult {
         'logs': logs,
       };
 
-  /// Deserializa desde JSON.
-  factory StageResult.fromJson(Map<String, dynamic> json) {
-    return StageResult(
-      stage: CIStage.values.firstWhere((s) => s.id == json['stage']),
-      status: StageStatus.values.firstWhere((s) => s.id == json['status']),
-      message: json['message'] as String?,
-      duration: json['duration_ms'] != null
-          ? Duration(milliseconds: json['duration_ms'] as int)
-          : null,
-      artifacts: List<String>.from(json['artifacts'] ?? []),
-      logs: List<String>.from(json['logs'] ?? []),
-    );
-  }
-
   @override
   String toString() =>
       'StageResult(${stage.label}: ${status.id}${message != null ? " - $message" : ""})';
@@ -160,6 +160,26 @@ class QualityGateConfig {
     this.requireTddCorrespondence = true,
     this.requireImmutableEntities = true,
   });
+
+  /// Deserializa desde JSON.
+  factory QualityGateConfig.fromJson(Map<String, dynamic> json) {
+    return QualityGateConfig(
+      minCoverage: (json['min_coverage'] as num?)?.toDouble() ?? 85.0,
+      maxCyclomaticComplexity:
+          json['max_cyclomatic_complexity'] as int? ?? 10,
+      maxCognitiveComplexity: json['max_cognitive_complexity'] as int? ?? 8,
+      maxLinesPerFile: json['max_lines_per_file'] as int? ?? 400,
+      requireDocumentation: json['require_documentation'] as bool? ?? true,
+      minDocumentationCoverage:
+          (json['min_documentation_coverage'] as num?)?.toDouble() ?? 80.0,
+      requireCleanArchitecture:
+          json['require_clean_architecture'] as bool? ?? true,
+      requireTddCorrespondence:
+          json['require_tdd_correspondence'] as bool? ?? true,
+      requireImmutableEntities:
+          json['require_immutable_entities'] as bool? ?? true,
+    );
+  }
 
   /// Cobertura mínima de tests (%).
   final double minCoverage;
@@ -193,20 +213,20 @@ class QualityGateConfig {
 
   /// Configuración estricta.
   static const strict = QualityGateConfig(
-    minCoverage: 90.0,
+    minCoverage: 90,
     maxCyclomaticComplexity: 8,
     maxCognitiveComplexity: 6,
     maxLinesPerFile: 300,
-    minDocumentationCoverage: 90.0,
+    minDocumentationCoverage: 90,
   );
 
   /// Configuración relajada para desarrollo.
   static const relaxed = QualityGateConfig(
-    minCoverage: 70.0,
+    minCoverage: 70,
     maxCyclomaticComplexity: 15,
     maxCognitiveComplexity: 12,
     maxLinesPerFile: 500,
-    minDocumentationCoverage: 60.0,
+    minDocumentationCoverage: 60,
     requireDocumentation: false,
   );
 
@@ -222,26 +242,6 @@ class QualityGateConfig {
         'require_tdd_correspondence': requireTddCorrespondence,
         'require_immutable_entities': requireImmutableEntities,
       };
-
-  /// Deserializa desde JSON.
-  factory QualityGateConfig.fromJson(Map<String, dynamic> json) {
-    return QualityGateConfig(
-      minCoverage: (json['min_coverage'] as num?)?.toDouble() ?? 85.0,
-      maxCyclomaticComplexity:
-          json['max_cyclomatic_complexity'] as int? ?? 10,
-      maxCognitiveComplexity: json['max_cognitive_complexity'] as int? ?? 8,
-      maxLinesPerFile: json['max_lines_per_file'] as int? ?? 400,
-      requireDocumentation: json['require_documentation'] as bool? ?? true,
-      minDocumentationCoverage:
-          (json['min_documentation_coverage'] as num?)?.toDouble() ?? 80.0,
-      requireCleanArchitecture:
-          json['require_clean_architecture'] as bool? ?? true,
-      requireTddCorrespondence:
-          json['require_tdd_correspondence'] as bool? ?? true,
-      requireImmutableEntities:
-          json['require_immutable_entities'] as bool? ?? true,
-    );
-  }
 
   @override
   String toString() =>
@@ -270,6 +270,34 @@ class CIConfig {
     this.failFast = true,
     this.cacheEnabled = true,
   });
+
+  /// Deserializa desde JSON.
+  factory CIConfig.fromJson(Map<String, dynamic> json) {
+    return CIConfig(
+      name: json['name'] as String,
+      triggers: (json['triggers'] as List?)
+              ?.map((t) => CITrigger.values.firstWhere((v) => v.id == t))
+              .toList() ??
+          [CITrigger.pullRequestMain],
+      stages: (json['stages'] as List?)
+              ?.map((s) => CIStage.values.firstWhere((v) => v.id == s))
+              .toList() ??
+          CIStage.values,
+      qualityGates: json['quality_gates'] != null
+          ? QualityGateConfig.fromJson(
+              json['quality_gates'] as Map<String, dynamic>)
+          : const QualityGateConfig(),
+      platforms: List<String>.from(
+        (json['platforms'] as List?) ?? ['ubuntu-latest'],
+      ),
+      dartVersions: List<String>.from(
+        (json['dart_versions'] as List?) ?? ['stable'],
+      ),
+      parallelJobs: json['parallel_jobs'] as bool? ?? true,
+      failFast: json['fail_fast'] as bool? ?? true,
+      cacheEnabled: json['cache_enabled'] as bool? ?? true,
+    );
+  }
 
   /// Nombre del pipeline.
   final String name;
@@ -301,7 +329,6 @@ class CIConfig {
   /// Configuración por defecto para DFSpec.
   static const dfspecDefault = CIConfig(
     name: 'DFSpec CI',
-    triggers: [CITrigger.pullRequestMain],
     platforms: ['ubuntu-latest', 'macos-latest', 'windows-latest'],
     dartVersions: ['stable', '3.0.0'],
   );
@@ -343,7 +370,7 @@ class CIConfig {
       buffer.writeln('  setup:');
       buffer.writeln('    runs-on: ubuntu-latest');
       buffer.writeln('    outputs:');
-      buffer.writeln('      matrix: \${{ steps.set-matrix.outputs.matrix }}');
+      buffer.writeln(r'      matrix: ${{ steps.set-matrix.outputs.matrix }}');
       buffer.writeln('    steps:');
       buffer.writeln('      - id: set-matrix');
       buffer.writeln('        run: |');
@@ -360,16 +387,16 @@ class CIConfig {
 
       if (platforms.length > 1 || dartVersions.length > 1) {
         buffer.writeln('    needs: setup');
-        buffer.writeln('    runs-on: \${{ matrix.os }}');
+        buffer.writeln(r'    runs-on: ${{ matrix.os }}');
         buffer.writeln('    strategy:');
         if (failFast) {
           buffer.writeln('      fail-fast: true');
         }
         buffer.writeln('      matrix:');
         buffer.writeln(
-            '        os: \${{ fromJson(needs.setup.outputs.matrix).os }}');
+            r'        os: ${{ fromJson(needs.setup.outputs.matrix).os }}');
         buffer.writeln(
-            '        dart: \${{ fromJson(needs.setup.outputs.matrix).dart }}');
+            r'        dart: ${{ fromJson(needs.setup.outputs.matrix).dart }}');
       } else {
         if (previousStage.isNotEmpty && !parallelJobs) {
           buffer.writeln('    needs: $previousStage');
@@ -384,7 +411,7 @@ class CIConfig {
       buffer.writeln('        with:');
 
       if (dartVersions.length > 1) {
-        buffer.writeln('          sdk: \${{ matrix.dart }}');
+        buffer.writeln(r'          sdk: ${{ matrix.dart }}');
       } else {
         buffer.writeln('          sdk: ${dartVersions.first}');
       }
@@ -397,9 +424,9 @@ class CIConfig {
         buffer.writeln('        with:');
         buffer.writeln('          path: ~/.pub-cache');
         buffer.writeln(
-            "          key: \${{ runner.os }}-pub-\${{ hashFiles('**/pubspec.lock') }}");
+            r"          key: ${{ runner.os }}-pub-${{ hashFiles('**/pubspec.lock') }}");
         buffer.writeln('          restore-keys: |');
-        buffer.writeln('            \${{ runner.os }}-pub-');
+        buffer.writeln(r'            ${{ runner.os }}-pub-');
         buffer.writeln();
       }
 
@@ -438,16 +465,16 @@ class CIConfig {
         buffer.writeln('          dart pub global activate coverage');
         buffer.writeln('          dart test --coverage=coverage');
         buffer.writeln(
-            '          dart pub global run coverage:format_coverage \\');
-        buffer.writeln('            --lcov \\');
-        buffer.writeln('            --in=coverage \\');
-        buffer.writeln('            --out=coverage/lcov.info \\');
+            r'          dart pub global run coverage:format_coverage \');
+        buffer.writeln(r'            --lcov \');
+        buffer.writeln(r'            --in=coverage \');
+        buffer.writeln(r'            --out=coverage/lcov.info \');
         buffer.writeln('            --report-on=lib');
         buffer.writeln();
         buffer.writeln('      - name: Check coverage threshold');
         buffer.writeln('        run: |');
         buffer.writeln(
-            '          COVERAGE=\$(dart pub global run coverage:format_coverage --in=coverage --report-on=lib 2>/dev/null | grep -oP "\\d+\\.\\d+" | head -1 || echo "0")');
+            r'          COVERAGE=$(dart pub global run coverage:format_coverage --in=coverage --report-on=lib 2>/dev/null | grep -oP "\d+\.\d+" | head -1 || echo "0")');
         buffer.writeln(
             '          if (( \$(echo "\$COVERAGE < ${qualityGates.minCoverage}" | bc -l) )); then');
         buffer.writeln(
@@ -468,7 +495,7 @@ class CIConfig {
         buffer.writeln('      - name: Upload artifact');
         buffer.writeln('        uses: actions/upload-artifact@v4');
         buffer.writeln('        with:');
-        buffer.writeln('          name: dfspec-\${{ runner.os }}');
+        buffer.writeln(r'          name: dfspec-${{ runner.os }}');
         buffer.writeln('          path: dfspec');
 
       case CIStage.publish:
@@ -494,31 +521,6 @@ class CIConfig {
         'cache_enabled': cacheEnabled,
       };
 
-  /// Deserializa desde JSON.
-  factory CIConfig.fromJson(Map<String, dynamic> json) {
-    return CIConfig(
-      name: json['name'] as String,
-      triggers: (json['triggers'] as List?)
-              ?.map((t) => CITrigger.values.firstWhere((v) => v.id == t))
-              .toList() ??
-          [CITrigger.pullRequestMain],
-      stages: (json['stages'] as List?)
-              ?.map((s) => CIStage.values.firstWhere((v) => v.id == s))
-              .toList() ??
-          CIStage.values,
-      qualityGates: json['quality_gates'] != null
-          ? QualityGateConfig.fromJson(
-              json['quality_gates'] as Map<String, dynamic>)
-          : const QualityGateConfig(),
-      platforms:
-          List<String>.from(json['platforms'] ?? ['ubuntu-latest']),
-      dartVersions: List<String>.from(json['dart_versions'] ?? ['stable']),
-      parallelJobs: json['parallel_jobs'] as bool? ?? true,
-      failFast: json['fail_fast'] as bool? ?? true,
-      cacheEnabled: json['cache_enabled'] as bool? ?? true,
-    );
-  }
-
   @override
   String toString() => 'CIConfig($name, triggers: ${triggers.length}, stages: ${stages.length})';
 }
@@ -536,6 +538,23 @@ class PipelineResult {
     this.branch,
     this.pullRequest,
   });
+
+  /// Deserializa desde JSON.
+  factory PipelineResult.fromJson(Map<String, dynamic> json) {
+    return PipelineResult(
+      config: CIConfig.fromJson(json['config'] as Map<String, dynamic>),
+      results: (json['results'] as List)
+          .map((r) => StageResult.fromJson(r as Map<String, dynamic>))
+          .toList(),
+      startTime: DateTime.parse(json['start_time'] as String),
+      endTime: json['end_time'] != null
+          ? DateTime.parse(json['end_time'] as String)
+          : null,
+      commit: json['commit'] as String?,
+      branch: json['branch'] as String?,
+      pullRequest: json['pull_request'] as int?,
+    );
+  }
 
   /// Configuración usada.
   final CIConfig config;
@@ -566,7 +585,7 @@ class PipelineResult {
 
   /// Duración total.
   Duration? get duration =>
-      endTime != null ? endTime!.difference(startTime) : null;
+      endTime?.difference(startTime);
 
   /// Resumen del pipeline.
   String toSummary() {
@@ -612,23 +631,6 @@ class PipelineResult {
         if (branch != null) 'branch': branch,
         if (pullRequest != null) 'pull_request': pullRequest,
       };
-
-  /// Deserializa desde JSON.
-  factory PipelineResult.fromJson(Map<String, dynamic> json) {
-    return PipelineResult(
-      config: CIConfig.fromJson(json['config'] as Map<String, dynamic>),
-      results: (json['results'] as List)
-          .map((r) => StageResult.fromJson(r as Map<String, dynamic>))
-          .toList(),
-      startTime: DateTime.parse(json['start_time'] as String),
-      endTime: json['end_time'] != null
-          ? DateTime.parse(json['end_time'] as String)
-          : null,
-      commit: json['commit'] as String?,
-      branch: json['branch'] as String?,
-      pullRequest: json['pull_request'] as int?,
-    );
-  }
 
   @override
   String toString() =>

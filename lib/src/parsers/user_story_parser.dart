@@ -10,19 +10,19 @@ class UserStoryParser {
     caseSensitive: false,
   );
 
-  /// Patron para formato "Como [rol]".
+  /// Patron para formato "Como <rol>".
   static final _asAPattern = RegExp(
     r'\*\*Como\*\*\s+(.+)',
     caseSensitive: false,
   );
 
-  /// Patron para formato "Quiero [funcionalidad]".
+  /// Patron para formato "Quiero <funcionalidad>".
   static final _iWantPattern = RegExp(
     r'\*\*Quiero\*\*\s+(.+)',
     caseSensitive: false,
   );
 
-  /// Patron para formato "Para [beneficio]".
+  /// Patron para formato "Para <beneficio>".
   static final _soThatPattern = RegExp(
     r'\*\*Para\*\*\s+(.+)',
     caseSensitive: false,

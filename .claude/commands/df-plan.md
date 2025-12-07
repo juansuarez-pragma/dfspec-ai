@@ -1,6 +1,9 @@
 ---
 description: Genera plan de implementacion desde especificacion
-allowed-tools: Read, Write, Edit, Glob, Grep, Task, AskUserQuestion
+allowed-tools: Read, Write, Edit, Glob, Grep, Task, AskUserQuestion, Bash
+scripts:
+  sh: scripts/bash/check-prerequisites.sh --json --require-spec
+  setup: scripts/bash/setup-plan.sh --json --full
 ---
 
 # Comando: df-plan
@@ -9,6 +12,50 @@ Eres un agente de planificacion para proyectos Flutter/Dart.
 
 ## Tarea
 Genera un plan de implementacion para: $ARGUMENTS
+
+## Scripts de Automatizacion
+
+**IMPORTANTE:** Antes de iniciar, ejecuta el script de prerequisitos:
+
+```bash
+./scripts/bash/check-prerequisites.sh --json --require-spec
+```
+
+Este script:
+- Verifica que existe spec.md para la feature
+- Retorna paths de todos los documentos
+- Detecta feature actual desde branch o variable de entorno
+
+**Para configurar el entorno de planificacion:**
+```bash
+./scripts/bash/setup-plan.sh --json --full
+```
+
+Este script:
+- Verifica que existe spec.md
+- Crea plan.md desde template con:
+  - Pre-Implementation Gates (Clean Architecture, TDD, etc.)
+  - Estructura de componentes por capa
+  - Orden de implementacion TDD
+  - Diagrama Mermaid de componentes
+- Crea archivos auxiliares (research.md, data-model.md, contracts/)
+- Retorna JSON con rutas creadas
+
+**Salida JSON de setup-plan.sh:**
+```json
+{
+  "status": "success",
+  "data": {
+    "feature_id": "001-auth",
+    "paths": {
+      "plan": "specs/plans/001-auth.plan.md",
+      "spec": "specs/features/001-auth/spec.md"
+    },
+    "created": ["plan.md", "research.md", "data-model.md", "contracts/"],
+    "spec_summary": "..."
+  }
+}
+```
 
 ## Proceso Obligatorio
 
@@ -160,6 +207,29 @@ Antes de guardar, verificar:
 2. Actualizar `[project.path]/dfspec.yaml`:
    - Cambiar status de la feature a `planned`
 
+## Servicios CLI Disponibles
+
+### Reportes
+```bash
+# Generar reporte de feature
+dart run dfspec report --feature=<nombre>
+
+# Ver estado del proyecto
+dart run dfspec report --project
+```
+
+### Verificacion
+```bash
+# Verificar quality gates antes de planificar
+dart run dfspec verify --all
+```
+
+### Cache
+```bash
+# Ver estadisticas del cache
+dart run dfspec cache stats
+```
+
 ## Siguiente Paso
 
 Indicar al usuario:
@@ -169,3 +239,15 @@ Plan generado en [project.path]/docs/specs/plans/[nombre].plan.md
 Para implementar, ejecutar:
 /df-implement [nombre-feature]
 ```
+
+## Handoffs
+
+### Entradas (otros comandos invocan df-plan)
+- Desde `/df-spec`: despues de crear especificacion
+- Desde `/df-orchestrate`: como segundo paso del pipeline
+
+### Salidas (df-plan invoca otros comandos)
+- Si falta especificacion: `/df-spec` para crear
+- Si hay issues de calidad: `/df-quality` para analisis previo
+- Despues de planificar: `/df-implement` para implementar
+- Para verificar dependencias: `/df-deps` antes de implementar

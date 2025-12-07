@@ -122,13 +122,13 @@ void main() {
     test('meetsQualityThresholds debe verificar umbrales', () {
       const passing = FeatureMetrics(
         coverage: 0.90,
-        averageComplexity: 5.0,
+        averageComplexity: 5,
         documentedPercentage: 0.85,
       );
 
       const failing = FeatureMetrics(
         coverage: 0.70,
-        averageComplexity: 15.0,
+        averageComplexity: 15,
         documentedPercentage: 0.50,
       );
 
@@ -156,7 +156,6 @@ void main() {
           coverage: 0.8,
           complexity: 7,
           linesOfCode: 100,
-          hasDocumentation: false,
         ),
       ];
 
@@ -291,8 +290,8 @@ void main() {
           totalComponents: 1,
           completedComponents: 1,
           coverage: 0.9,
-          averageComplexity: 5.0,
-          documentedPercentage: 1.0,
+          averageComplexity: 5,
+          documentedPercentage: 1,
         ),
         generatedAt: DateTime(2024, 6, 15),
         specPath: 'docs/specs/features/city-search.spec.md',
@@ -325,7 +324,7 @@ void main() {
         description: 'Test description',
         specPath: 'docs/spec.md',
         planPath: 'docs/plan.md',
-        recommendations: ['Recommendation 1'],
+        recommendations: const ['Recommendation 1'],
       );
 
       final json = original.toJson();
@@ -484,7 +483,7 @@ void main() {
             status: FeatureStatus.implemented,
             components: const [],
             metrics: const FeatureMetrics(),
-            generatedAt: DateTime(2024, 1, 1),
+            generatedAt: DateTime(2024),
           ),
         ],
         generatedAt: DateTime(2024, 6, 15),
