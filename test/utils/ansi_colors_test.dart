@@ -276,12 +276,12 @@ void main() {
 
     group('stripAnsi', () {
       test('elimina códigos ANSI simples', () {
-        final colored = '\x1B[32mHello\x1B[0m';
+        const colored = '\x1B[32mHello\x1B[0m';
         expect(AnsiColors.stripAnsi(colored), equals('Hello'));
       });
 
       test('elimina múltiples códigos ANSI', () {
-        final styled = '\x1B[1m\x1B[31mBold Red\x1B[0m';
+        const styled = '\x1B[1m\x1B[31mBold Red\x1B[0m';
         expect(AnsiColors.stripAnsi(styled), equals('Bold Red'));
       });
 

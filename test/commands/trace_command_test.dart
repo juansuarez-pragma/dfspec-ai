@@ -366,31 +366,31 @@ void main() {
 
   group('Export file extensions', () {
     test('reconoce extensión .json', () {
-      final path = 'report.json';
+      const path = 'report.json';
       final extension = path.split('.').last.toLowerCase();
       expect(extension, equals('json'));
     });
 
     test('reconoce extensión .html', () {
-      final path = 'report.html';
+      const path = 'report.html';
       final extension = path.split('.').last.toLowerCase();
       expect(extension, equals('html'));
     });
 
     test('reconoce extensión .md', () {
-      final path = 'report.md';
+      const path = 'report.md';
       final extension = path.split('.').last.toLowerCase();
       expect(extension, equals('md'));
     });
 
     test('maneja paths con múltiples puntos', () {
-      final path = 'my.report.file.json';
+      const path = 'my.report.file.json';
       final extension = path.split('.').last.toLowerCase();
       expect(extension, equals('json'));
     });
 
     test('maneja extensión uppercase', () {
-      final path = 'REPORT.JSON';
+      const path = 'REPORT.JSON';
       final extension = path.split('.').last.toLowerCase();
       expect(extension, equals('json'));
     });

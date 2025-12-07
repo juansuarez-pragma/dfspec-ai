@@ -72,7 +72,7 @@ void main() {
       });
 
       test('parsea JSON con caracteres especiales', () {
-        final result = testClass.parseJson('{"key": "value with \\"quotes\\""}');
+        final result = testClass.parseJson(r'{"key": "value with \"quotes\""}');
         expect(result, isNotNull);
         expect(result!['key'], contains('quotes'));
       });
@@ -288,7 +288,7 @@ void main() {
       final testClass = TestJsonOutput();
       final filePath = '${tempDir.path}/pretty.json';
 
-      await testClass.saveJson(filePath, {'key': 'value'}, pretty: true);
+      await testClass.saveJson(filePath, {'key': 'value'});
 
       final content = await File(filePath).readAsString();
       expect(content, contains('\n'));

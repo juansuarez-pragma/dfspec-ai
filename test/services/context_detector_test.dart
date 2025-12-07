@@ -37,7 +37,7 @@ void main() {
         final detector = ContextDetector(scriptsPath: scriptsPath);
 
         expect(
-          () => detector.detectFullContext(),
+          detector.detectFullContext,
           throwsA(
             isA<ContextDetectionException>()
                 .having((e) => e.code, 'code', 'SCRIPT_NOT_FOUND'),
@@ -58,7 +58,7 @@ exit 1
         final detector = ContextDetector(scriptsPath: scriptsPath);
 
         expect(
-          () => detector.detectFullContext(),
+          detector.detectFullContext,
           throwsA(isA<ContextDetectionException>()),
         );
       });
@@ -75,7 +75,7 @@ exit 1
         final detector = ContextDetector(scriptsPath: scriptsPath);
 
         expect(
-          () => detector.detectFullContext(),
+          detector.detectFullContext,
           throwsA(
             isA<ContextDetectionException>()
                 .having((e) => e.code, 'code', 'TEST_ERROR')
@@ -95,7 +95,7 @@ echo 'not valid json'
         final detector = ContextDetector(scriptsPath: scriptsPath);
 
         expect(
-          () => detector.detectFullContext(),
+          detector.detectFullContext,
           throwsA(
             isA<ContextDetectionException>()
                 .having((e) => e.code, 'code', 'JSON_PARSE_ERROR'),
@@ -190,7 +190,7 @@ echo '{"status": "success", "data": {"project": {"name": "test"}, "git": {"is_gi
               'status': 'planned',
               'next_available_number': '002',
             },
-            'quality': {},
+            'quality': <String, dynamic>{},
           },
         });
 
@@ -430,7 +430,7 @@ echo '{"status": "success", "data": {"validation": {"passed": true, "score": 100
             'project': {'name': 'test'},
             'git': {'is_git_repo': true, 'current_branch': 'main'},
             'feature': {'next_available_number': '005'},
-            'quality': {},
+            'quality': <String, dynamic>{},
           },
         });
 
@@ -456,7 +456,7 @@ echo '$jsonResponse'
             'project': {'name': 'test'},
             'git': {'is_git_repo': true, 'current_branch': 'main'},
             'feature': {'next_available_number': '001'},
-            'quality': {},
+            'quality': <String, dynamic>{},
           },
         });
 
@@ -480,7 +480,7 @@ echo '$jsonResponse'
             'project': {'name': 'test'},
             'git': {'is_git_repo': false, 'current_branch': ''},
             'feature': {'next_available_number': '001'},
-            'quality': {},
+            'quality': <String, dynamic>{},
           },
         });
 
@@ -509,7 +509,7 @@ echo '$jsonResponse'
               'current_branch': 'feature/001-auth',
             },
             'feature': {'next_available_number': '002'},
-            'quality': {},
+            'quality': <String, dynamic>{},
           },
         });
 

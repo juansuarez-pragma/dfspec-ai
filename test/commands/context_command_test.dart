@@ -8,11 +8,11 @@ import 'package:test/test.dart';
 void main() {
   group('ContextCommand', () {
     late ContextCommand command;
-    late CommandRunner<int> runner;
 
     setUp(() {
       command = ContextCommand();
-      runner = CommandRunner<int>('test', 'Test runner')..addCommand(command);
+      // Runner se configura pero no se usa directamente en estos tests
+      CommandRunner<int>('test', 'Test runner').addCommand(command);
     });
 
     group('command properties', () {
@@ -325,7 +325,7 @@ void main() {
 
   group('JSON output format', () {
     test('JsonEncoder indenta con 2 espacios', () {
-      final encoder = const JsonEncoder.withIndent('  ');
+      const encoder = JsonEncoder.withIndent('  ');
       final json = encoder.convert({'key': 'value'});
       expect(json, contains('  "key"'));
     });
@@ -342,7 +342,7 @@ void main() {
         'project': {'name': 'test'},
         'git': {'is_git_repo': true},
       };
-      final encoder = const JsonEncoder.withIndent('  ');
+      const encoder = JsonEncoder.withIndent('  ');
       final jsonString = encoder.convert(data);
       final decoded = jsonDecode(jsonString);
       expect(decoded['project']['name'], equals('test'));

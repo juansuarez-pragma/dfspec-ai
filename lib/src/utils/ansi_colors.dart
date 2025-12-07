@@ -219,9 +219,9 @@ abstract final class AnsiColors {
   /// Nota: Esta es una verificación básica, no es 100% precisa.
   static bool get supportsColors {
     // En CI usualmente se soporta, pero puede estar deshabilitado
-    final term = String.fromEnvironment('TERM', defaultValue: '');
-    final colorTerm = String.fromEnvironment('COLORTERM', defaultValue: '');
-    final noColor = String.fromEnvironment('NO_COLOR', defaultValue: '');
+    const term = String.fromEnvironment('TERM');
+    const colorTerm = String.fromEnvironment('COLORTERM');
+    const noColor = String.fromEnvironment('NO_COLOR');
 
     if (noColor.isNotEmpty) return false;
     if (colorTerm.isNotEmpty) return true;
