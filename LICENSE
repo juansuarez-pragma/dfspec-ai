@@ -19,3 +19,16 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+
+---
+
+ACKNOWLEDGMENTS
+
+This project is inspired by spec-kit (https://github.com/github/spec-kit),
+a Spec-Driven Development toolkit created by GitHub, Inc.
+
+spec-kit is licensed under the MIT License:
+Copyright (c) GitHub, Inc.
+
+We acknowledge and thank the spec-kit team, especially Den Delimarsky and
+John Lam, for their pioneering work in Spec-Driven Development methodology.

@@ -27,6 +27,7 @@ Optimizado para **Claude Code** con soporte completo para modelos opus, sonnet y
 - [Estructura del Proyecto](#estructura-del-proyecto)
 - [Documentacion](#documentacion)
 - [Contribuir](#contribuir)
+- [Reconocimientos](#reconocimientos)
 
 ## Que es Spec-Driven Development?
 
@@ -596,10 +597,50 @@ dart test test/src/loaders/agent_loader_test.dart
 dart test --name "debe cargar"
 ```
 
+## Reconocimientos
+
+DFSpec esta profundamente inspirado por el trabajo pionero en **Spec-Driven Development**:
+
+### spec-kit
+
+Este proyecto se basa en la metodologia y conceptos introducidos por [**spec-kit**](https://github.com/github/spec-kit), un toolkit open-source de GitHub que hace que las especificaciones sean ejecutables.
+
+> *"Las especificaciones no son solo documentacion—son la fuente de verdad que genera implementaciones."*
+
+**Creditos principales:**
+- **[Den Delimarsky](https://github.com/localden)** - Lider del proyecto spec-kit
+- **[John Lam](https://github.com/jflam)** - Investigacion y trabajo fundamental en SDD
+
+spec-kit introduce conceptos clave que DFSpec adapta para el ecosistema Dart/Flutter:
+
+| spec-kit | DFSpec |
+|----------|--------|
+| `/speckit.constitution` | `memory/constitution.md` |
+| `/speckit.specify` | `/df-spec` |
+| `/speckit.plan` | `/df-plan` |
+| `/speckit.tasks` | `/df-tasks` |
+| `/speckit.implement` | `/df-implement` |
+
+### Diferencias con spec-kit
+
+Mientras spec-kit es un toolkit general en Python para cualquier lenguaje, DFSpec:
+
+- **Especializa** en Dart/Flutter con soporte nativo
+- **Integra** Clean Architecture como patron obligatorio
+- **Extiende** con 17 agentes especializados (calidad, seguridad, performance)
+- **Incluye** herramientas MCP de Dart para analisis y testing
+- **Implementa** recovery points y constitutional gates
+
+### Licencia
+
+spec-kit esta bajo [MIT License](https://github.com/github/spec-kit/blob/main/LICENSE) © GitHub, Inc.
+
+DFSpec es un proyecto independiente que reconoce y agradece la inspiracion metodologica de spec-kit.
+
 ## Licencia
 
 MIT License - ver [LICENSE](LICENSE) para detalles.
 
 ---
 
-Construido con Claude Code | Inspirado por [spec-kit](https://github.com/github/spec-kit)
+Construido con Claude Code | Inspirado por [spec-kit](https://github.com/github/spec-kit) de GitHub
