@@ -169,10 +169,10 @@ tools:
       expect(agent.tools, contains('Write'));
     });
 
-    test('debe cargar todos los 13 agentes reales', () {
+    test('debe cargar todos los 17 agentes reales', () {
       final agents = loader.loadAll();
 
-      expect(agents.length, greaterThanOrEqualTo(13));
+      expect(agents.length, greaterThanOrEqualTo(17));
 
       final agentIds = agents.map((a) => a.id).toList();
       expect(

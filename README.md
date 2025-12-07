@@ -45,7 +45,7 @@ SDD invierte el desarrollo tradicional: **las especificaciones son la fuente pri
 - **Clean Architecture** como patron obligatorio
 - **TDD estricto** (Red -> Green -> Refactor)
 - **State Management** (Riverpod, BLoC, Provider)
-- **13 agentes especializados** para cada fase del desarrollo
+- **17 agentes especializados** para cada fase del desarrollo
 - **Herramientas MCP** de Dart integradas
 - **Soporte de modelos** opus, sonnet, haiku
 
@@ -61,7 +61,7 @@ dfspec-ia/
 │   ├── dfimplementer.md      # Agente para implementacion TDD
 │   ├── dftest.md             # Agente para testing
 │   ├── dfverifier.md         # Agente para verificacion
-│   └── ...                   # 13 agentes especializados
+│   └── ...                   # 17 agentes especializados
 ├── lib/src/
 │   ├── config/               # Configuracion Claude Code
 │   ├── loaders/              # Carga agentes desde archivos
@@ -69,7 +69,7 @@ dfspec-ia/
 │   ├── invokers/             # Invocacion multi-agente con modelos
 │   ├── generators/           # Genera comandos Markdown
 │   └── commands/             # CLI commands
-└── test/                     # 899+ tests
+└── test/                     # 1033+ tests
 ```
 
 ### Flujo de Datos
@@ -205,7 +205,7 @@ dfspec trace --severity=critical       # Filtrar por severidad
 
 ## Comandos
 
-DFSpec proporciona **17 comandos slash**:
+DFSpec proporciona **19 comandos slash**:
 
 ### Comandos Core (Flujo Principal)
 
@@ -524,7 +524,7 @@ dfspec-ia/
 │   ├── dfimplementer.md      # Desarrollador TDD
 │   ├── dftest.md             # Especialista QA
 │   ├── dfverifier.md         # Auditor de completitud
-│   └── ...                   # 13 agentes especializados
+│   └── ...                   # 17 agentes especializados
 ├── lib/
 │   ├── dfspec.dart           # Barrel export
 │   └── src/
@@ -546,7 +546,7 @@ dfspec-ia/
 │   └── plans/                # Planes de implementacion
 ├── memory/
 │   └── constitution.md       # Principios inmutables
-├── test/                     # 899+ tests
+├── test/                     # 1033+ tests
 ├── bin/
 │   └── dfspec.dart           # Entry point del CLI
 ├── pubspec.yaml

@@ -308,10 +308,10 @@ Crea y ejecuta tests.
       expect(invocation.model, equals('haiku'));
     });
 
-    test('debe listar todos los 13 agentes con modelos', () {
+    test('debe listar todos los 17 agentes con modelos', () {
       final agents = invoker.listAgentsWithModels();
 
-      expect(agents.length, greaterThanOrEqualTo(13));
+      expect(agents.length, greaterThanOrEqualTo(17));
       expect(
         agents.keys,
         containsAll([

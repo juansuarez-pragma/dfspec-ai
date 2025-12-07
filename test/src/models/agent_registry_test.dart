@@ -256,8 +256,8 @@ tools:
         ..initialize();
     });
 
-    test('debe cargar todos los 13 agentes', () {
-      expect(registry.allIds.length, greaterThanOrEqualTo(13));
+    test('debe cargar todos los 17 agentes', () {
+      expect(registry.allIds.length, greaterThanOrEqualTo(17));
     });
 
     test('debe tener agentes en todas las categorias', () {
