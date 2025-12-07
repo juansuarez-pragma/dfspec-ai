@@ -543,7 +543,8 @@ dfspec-ia/
 │       └── plan.template.md  # Template de plan
 ├── docs/                     # Documentacion
 │   ├── spec-driven-flutter.md
-│   └── plans/                # Planes de implementacion
+│   ├── devops-guide.md       # Guia de CI/CD
+│   └── report-guide.md       # Guia de reportes
 ├── memory/
 │   └── constitution.md       # Principios inmutables
 ├── test/                     # 1033+ tests
@@ -559,6 +560,8 @@ dfspec-ia/
 
 - [Spec-Driven Development para Flutter](docs/spec-driven-flutter.md)
 - [Constitucion - Principios Inmutables](memory/constitution.md)
+- [Guia de CI/CD y DevOps](docs/devops-guide.md)
+- [Guia de Reportes](docs/report-guide.md)
 
 ## Contribuir
 

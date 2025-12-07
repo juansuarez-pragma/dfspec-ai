@@ -7,6 +7,14 @@ y este proyecto adhiere a [Semantic Versioning](https://semver.org/lang/es/).
 
 ## [Unreleased]
 
+### Cambiado
+
+#### Reorganización de Documentación
+- Movido `agents/dfdevops.md` → `docs/devops-guide.md` (era documentación, no agente)
+- Movido `agents/dfreport.md` → `docs/report-guide.md` (era documentación, no agente)
+- Carpeta `agents/` ahora contiene exactamente 17 agentes parseables con YAML frontmatter
+- Los comandos `/df-devops` y `/df-report` siguen funcionando desde `.claude/commands/`
+
 ### Agregado
 
 #### Detección Automática de Contexto (Fase 2)
