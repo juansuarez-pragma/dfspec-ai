@@ -195,8 +195,8 @@ y este proyecto adhiere a [Semantic Versioning](https://semver.org/lang/es/).
 
 ### Documentación
 - README.md actualizado para arquitectura Claude-first
-- Plan de refactor documentado en `docs/plans/claude-first-refactor.plan.md`
-- Preparación para futura extensión multi-plataforma documentada
+- Reconocimiento a spec-kit agregado en README y ACKNOWLEDGMENTS.md
+- Documentación de metodología SDD actualizada
 
 ## [0.1.0] - 2024-12-06
 
